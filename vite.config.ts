@@ -15,11 +15,14 @@ export default defineConfig({
         },
       },
     },
+    assetsInlineLimit: 0,
+    sourcemap: true,
   },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Content-Type': 'text/javascript',
     },
   },
 });
