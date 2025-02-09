@@ -16,7 +16,8 @@ export const MOCK_OFFERS: Offer[] = [
     device: "All Devices",
     link: "#",
     epc: "2.50"
-  }
+  },
+  // ... (keep other mock offers)
 ];
 
 // Helper function to track offer completions
@@ -73,38 +74,35 @@ export async function fetchOffers(): Promise<Offer[]> {
       user_agent: encodeURIComponent(navigator.userAgent),
       ctype: '2', // CPA offers only
       aff_sub4: localStorage.getItem('userEmail') || '',
-      aff_sub5: 'web_app',
-      min: 5 // Request at least 5 offers
+      aff_sub5: 'web_app'
     };
 
-    console.log('Fetching offers with params:', params);
+    // Try to fetch from the Netlify function first
+    try {
+      const response = await fetch('/.netlify/functions/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: API_KEY,
+          params
+        })
+      });
 
-    // Try to fetch from the Netlify function
-    const response = await fetch('/.netlify/functions/offers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        apiKey: API_KEY,
-        params
-      })
-    });
-
-    if (!response.ok) {
-      console.warn('API request failed:', await response.text());
-      return MOCK_OFFERS;
+      if (response.ok) {
+        const data: ApiResponse = await response.json();
+        if (data.success && data.offers && data.offers.length > 0) {
+          // Combine real offers with mock offers to ensure we always have content
+          return [...data.offers, ...MOCK_OFFERS];
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch from Netlify function:', error);
     }
 
-    const data: ApiResponse = await response.json();
-    console.log('API response:', data);
-
-    if (data.success && data.offers && data.offers.length > 0) {
-      console.log(`Received ${data.offers.length} offers from API`);
-      return data.offers;
-    }
-
-    console.warn('No offers received from API, using mock offers');
+    // If all else fails, return mock offers
+    console.log('Using mock offers for development');
     return MOCK_OFFERS;
 
   } catch (error) {
@@ -115,6 +113,7 @@ export async function fetchOffers(): Promise<Offer[]> {
         stack: error.stack
       });
     }
+    // Always return mock offers as fallback
     return MOCK_OFFERS;
   }
 }

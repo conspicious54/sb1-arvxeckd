@@ -18,17 +18,12 @@
     X-XSS-Protection = "1; mode=block"
 
 [[headers]]
-  for = "/*.js"
+  for = "/assets/*.js"
     [headers.values]
     Content-Type = "application/javascript"
 
 [[headers]]
-  for = "/*.mjs"
-    [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/*.css"
+  for = "/assets/*.css"
     [headers.values]
     Content-Type = "text/css"
 
