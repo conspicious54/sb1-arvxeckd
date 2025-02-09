@@ -7,7 +7,7 @@ interface RedemptionConfirmationProps {
   onConfirm: () => void;
   reward: {
     name: string;
-    image: string;
+    image_url: string;
   };
   option: RewardOption;
 }
@@ -22,7 +22,7 @@ export function RedemptionConfirmation({
   if (!isOpen) return null;
 
   // Calculate actual points needed after double points discount
-  const displayPoints = option.doublePoints ? Math.round(option.points / 2) : option.points;
+  const displayPoints = option.double_points ? Math.round(option.points / 2) : option.points;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -61,7 +61,7 @@ export function RedemptionConfirmation({
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 mb-6">
             <div className="flex items-center gap-4">
               <img
-                src={reward.image}
+                src={reward.image_url}
                 alt={reward.name}
                 className="w-16 h-16 object-cover rounded-lg"
               />
@@ -84,14 +84,14 @@ export function RedemptionConfirmation({
                 <span className="font-semibold text-gray-900 dark:text-white">
                   {displayPoints.toLocaleString()} points
                 </span>
-                {option.doublePoints && (
+                {option.double_points && (
                   <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
                     {option.points.toLocaleString()} points
                   </div>
                 )}
               </div>
             </div>
-            {option.doublePoints && (
+            {option.double_points && (
               <div className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 <span>Double points offer applied! Save 50% points</span>

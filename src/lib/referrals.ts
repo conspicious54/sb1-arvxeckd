@@ -5,8 +5,6 @@ export interface ReferralStats {
   pendingReferrals: number;
   totalEarned: number;
   potentialEarnings: number;
-  monthlyRank: number;
-  conversionRate: string;
 }
 
 export async function getReferralStats(userId: string): Promise<ReferralStats> {
@@ -22,16 +20,6 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
       throw new Error('Profile not found');
     }
 
-    // Get total number of users for rank calculation
-    const { count: totalUsers } = await supabase
-      .from('profiles')
-      .select('id', { count: 'exact', head: true });
-
-    // Calculate conversion rate
-    const conversionRate = profile.total_referrals > 0
-      ? Math.round((profile.total_referrals - profile.pending_referrals) / profile.total_referrals * 100)
-      : 0;
-
     // Calculate potential earnings (pending referrals * 2000 points)
     const potentialEarnings = profile.pending_referrals * 2000;
 
@@ -39,9 +27,7 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
       totalReferrals: profile.total_referrals || 0,
       pendingReferrals: profile.pending_referrals || 0,
       totalEarned: profile.referral_earnings || 0,
-      potentialEarnings,
-      monthlyRank: Math.floor(Math.random() * (totalUsers || 100)) + 1,
-      conversionRate: `${conversionRate}%`
+      potentialEarnings
     };
   } catch (error) {
     console.error('Error getting referral stats:', error);
@@ -49,9 +35,7 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
       totalReferrals: 0,
       pendingReferrals: 0,
       totalEarned: 0,
-      potentialEarnings: 0,
-      monthlyRank: 0,
-      conversionRate: '0%'
+      potentialEarnings: 0
     };
   }
 }
@@ -177,59 +161,6 @@ export async function processReferral(referralCode: string): Promise<{
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to process referral'
-    };
-  }
-}
-
-export async function completeReferral(userId: string): Promise<{
-  success: boolean;
-  error?: string;
-}> {
-  try {
-    // Get user's profile to find their referrer
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('referred_by')
-      .eq('id', userId)
-      .single();
-
-    if (!profile?.referred_by) {
-      return { success: true }; // Not a referral, just succeed silently
-    }
-
-    // Update referrer's stats
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        total_referrals: supabase.sql`total_referrals + 1`,
-        pending_referrals: supabase.sql`pending_referrals - 1`,
-        referral_earnings: supabase.sql`referral_earnings + 2000`
-      })
-      .eq('id', profile.referred_by);
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // Record the referral earnings
-    const { error: earningsError } = await supabase
-      .from('referral_earnings')
-      .insert({
-        referrer_id: profile.referred_by,
-        referred_id: userId,
-        points_earned: 2000
-      });
-
-    if (earningsError) {
-      throw earningsError;
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error completing referral:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to complete referral'
     };
   }
 }
