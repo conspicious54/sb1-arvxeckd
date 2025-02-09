@@ -118,11 +118,10 @@ export async function redeemReward(rewardId: string, optionId: string): Promise<
       .insert({
         user_id: user.id,
         reward_id: rewardId,
-        option_id: optionId,
-        points_spent: pointsNeeded,
+        reward_type: reward.name,
         amount: option.amount,
-        status: 'pending',
-        reward_type: reward.name
+        points_spent: pointsNeeded,
+        status: 'pending'
       });
 
     if (redemptionError) {
