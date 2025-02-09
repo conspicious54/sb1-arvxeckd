@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Gift, Sparkles, Info, Lock, Coins } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import useSound from 'use-sound';
+import confetti from 'canvas-confetti';
 import { useMultiplier } from '../context/MultiplierContext';
+import { supabase } from '../lib/supabase';
+
+interface GameHistory {
+  multiplier: number;
+  timestamp: Date;
+  crashed: boolean;
+}
 
 const PRIZES = [
   { label: '2x Points', value: 2, color: '#4F46E5', textColor: '#fff' }, // indigo-600
@@ -17,6 +24,7 @@ const PRIZES = [
 
 const SPIN_COST = 5000; // 5,000 points to spin
 const SPIN_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const REQUIRED_CONVERSIONS = 15; // Number of conversions required to unlock
 
 export function LuckySpinner() {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -26,13 +34,64 @@ export function LuckySpinner() {
     const saved = localStorage.getItem('lastSpinTime');
     return saved ? parseInt(saved) : 0;
   });
+  const [completedOffers, setCompletedOffers] = useState(0);
+  const [isLocked, setIsLocked] = useState(true);
   const [playSpinning] = useSound('/spinning.mp3', { volume: 0.3 });
   const [playWin] = useSound('/win.mp3', { volume: 0.5 });
   const { setMultiplier } = useMultiplier();
+  const animationFrameRef = useRef<number>();
+  const startTimeRef = useRef<number>();
 
   const userPoints = 10000; // This should come from your user state
-  const canSpin = userPoints >= SPIN_COST && Date.now() - lastSpinTime >= SPIN_COOLDOWN;
-  
+  const canSpin = userPoints >= SPIN_COST && Date.now() - lastSpinTime >= SPIN_COOLDOWN && !isLocked;
+
+  // Load completed offers count
+  useEffect(() => {
+    async function loadCompletedOffers() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('completed_offers')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          setCompletedOffers(profile.completed_offers);
+          setIsLocked(profile.completed_offers < REQUIRED_CONVERSIONS);
+        }
+      } catch (error) {
+        console.error('Error loading completed offers:', error);
+      }
+    }
+
+    loadCompletedOffers();
+
+    // Subscribe to profile changes
+    const channel = supabase
+      .channel('profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload: any) => {
+          const newCount = payload.new.completed_offers;
+          setCompletedOffers(newCount);
+          setIsLocked(newCount < REQUIRED_CONVERSIONS);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const timeUntilNextSpin = () => {
     const timeLeft = SPIN_COOLDOWN - (Date.now() - lastSpinTime);
     if (timeLeft <= 0) return null;
@@ -54,8 +113,6 @@ export function LuckySpinner() {
     const prize = PRIZES[prizeIndex];
 
     // Calculate the final rotation
-    // Each prize takes up 360/PRIZES.length degrees
-    // We want to land in the middle of the prize's segment
     const degreesPerPrize = 360 / PRIZES.length;
     const prizeRotation = 360 - (prizeIndex * degreesPerPrize + degreesPerPrize / 2);
     
@@ -91,8 +148,73 @@ export function LuckySpinner() {
     }, 5000);
   };
 
+  // If locked, only show the locked state
+  if (isLocked) {
+    return (
+      <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Gift className="w-6 h-6" />
+            <h3 className="text-xl font-bold">Lucky Spinner</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+              title="How it works"
+            >
+              <Info className="w-4 h-4 text-purple-100" />
+            </button>
+            <div className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-lg flex items-center gap-2">
+              <Lock className="w-4 h-4 text-yellow-300" />
+              <span className="text-sm font-medium">Locked</span>
+            </div>
+          </div>
+        </div>
+
+        {showInfo && (
+          <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-xl p-4 text-sm">
+            <h4 className="font-semibold mb-2">How to Unlock:</h4>
+            <ul className="space-y-2 text-purple-100">
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-purple-300 rounded-full"></div>
+                Complete {REQUIRED_CONVERSIONS} offers to unlock
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-purple-300 rounded-full"></div>
+                Win multipliers from 1.2x to 10x
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1 h-1 bg-purple-300 rounded-full"></div>
+                Costs {SPIN_COST.toLocaleString()} points per spin
+              </li>
+            </ul>
+          </div>
+        )}
+
+        <div className="bg-black/20 backdrop-blur-sm rounded-xl p-8 flex flex-col items-center justify-center text-center">
+          <div className="p-4 bg-white/10 rounded-full mb-4">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold mb-2">Lucky Spinner Locked</h3>
+          <p className="text-gray-300 mb-4">
+            Complete {REQUIRED_CONVERSIONS - completedOffers} more offers to unlock
+            <br />
+            ({completedOffers}/{REQUIRED_CONVERSIONS} completed)
+          </p>
+          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
+              style={{ width: `${(completedOffers / REQUIRED_CONVERSIONS) * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white">
+    <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Gift className="w-6 h-6" />
