@@ -10,43 +10,31 @@ import { CompletionPopup } from '../components/CompletionPopup';
 import { fetchOffers } from '../api';
 import type { Offer } from '../types';
 
-// Demo offer for testing
-const TEST_OFFER = {
-  offerid: 999,
-  name: "Test Completion Offer",
-  name_short: "Test Offer",
-  description: "This is a test offer for demonstration purposes",
-  adcopy: "Complete this test offer to see how the completion flow works!",
-  picture: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80",
-  payout: "5.00",
-  country: "US",
-  device: "All Devices",
-  link: "#",
-  epc: "1.00"
-};
-
-type SortOption = 'payout' | 'popular' | 'easy';
+type SortOption = 'popular' | 'payout' | 'easy';
 
 export function DashboardPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const [selectedDevice, setSelectedDevice] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('payout');
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showTestPopup, setShowTestPopup] = useState(false);
 
   useEffect(() => {
     const loadOffers = async () => {
       const fetchedOffers = await fetchOffers();
-      setOffers(fetchedOffers);
+      // Sort by EPC by default
+      const sortedOffers = [...fetchedOffers].sort((a, b) => 
+        parseFloat(b.epc) - parseFloat(a.epc)
+      );
+      setOffers(sortedOffers);
     };
 
     loadOffers();
   }, []);
 
   const handleOfferComplete = (offerId: number) => {
-    // Handle offer completion
     console.log('Offer completed:', offerId);
   };
 
@@ -68,10 +56,10 @@ export function DashboardPage() {
 
   const sortedOffers = [...filteredOffers].sort((a, b) => {
     switch (sortBy) {
+      case 'popular': // This is actually EPC-based sorting
+        return parseFloat(b.epc) - parseFloat(a.epc);
       case 'payout':
         return parseFloat(b.payout) - parseFloat(a.payout);
-      case 'popular':
-        return parseFloat(b.epc) - parseFloat(a.epc);
       case 'easy':
         const aScore = (parseFloat(a.epc) * 100) / parseFloat(a.payout);
         const bScore = (parseFloat(b.epc) * 100) / parseFloat(b.payout);
@@ -81,6 +69,7 @@ export function DashboardPage() {
     }
   });
 
+  // Get the featured offer (highest EPC)
   const featuredOffer = sortedOffers.length > 0 ? sortedOffers[0] : null;
   const remainingOffers = sortedOffers.filter(offer => 
     featuredOffer ? offer.offerid !== featuredOffer.offerid : true
@@ -97,15 +86,6 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Offers Column */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Test Completion Button */}
-          <button
-            onClick={() => setShowTestPopup(true)}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-2 group shadow-lg"
-          >
-            <PartyPopper className="w-5 h-5" />
-            Test Offer Completion
-          </button>
-
           {/* Featured Offer */}
           {featuredOffer && (
             <div className="mb-8">
@@ -190,8 +170,8 @@ export function DashboardPage() {
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
                     className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   >
-                    <option value="payout">Highest Payout</option>
                     <option value="popular">Most Popular</option>
+                    <option value="payout">Highest Payout</option>
                     <option value="easy">Easiest Completion</option>
                   </select>
                 </div>
@@ -228,13 +208,6 @@ export function DashboardPage() {
           <RedeemCard />
         </div>
       </div>
-
-      {/* Test Completion Popup */}
-      <CompletionPopup
-        isOpen={showTestPopup}
-        onClose={() => setShowTestPopup(false)}
-        offer={TEST_OFFER}
-      />
     </div>
   );
 }
