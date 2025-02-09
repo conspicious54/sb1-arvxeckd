@@ -117,7 +117,6 @@ export async function redeemReward(rewardId: string, optionId: string): Promise<
       .from('redemptions')
       .insert({
         user_id: user.id,
-        reward_id: rewardId,
         reward_type: reward.name,
         amount: option.amount,
         points_spent: pointsNeeded,
