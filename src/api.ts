@@ -32,19 +32,51 @@ export const MOCK_OFFERS: Offer[] = [
   }
 ];
 
+// Helper function to get client IP with fallback
+async function getClientIP(): Promise<string> {
+  try {
+    // Try multiple IP services
+    const services = [
+      'https://api.ipify.org?format=json',
+      'https://api.myip.com',
+      'https://api.ip.sb/jsonip'
+    ];
+
+    for (const service of services) {
+      try {
+        const response = await fetch(service);
+        if (!response.ok) continue;
+        
+        const data = await response.json();
+        // Handle different response formats
+        const ip = data.ip || data.address || data.YourFuckingIPAddress;
+        if (ip) return ip;
+      } catch (e) {
+        console.warn(`Failed to fetch IP from ${service}:`, e);
+        continue;
+      }
+    }
+
+    // If all services fail, use a fallback IP
+    console.warn('Failed to get client IP, using fallback');
+    return '8.8.8.8';
+  } catch (error) {
+    console.error('Error getting client IP:', error);
+    return '8.8.8.8';
+  }
+}
+
 // Helper function to track offer completions
 export async function trackOfferCompletion(offerId: number) {
   try {
     console.log('Tracking offer completion:', offerId);
     
-    // Get user's IP
-    const ipResponse = await fetch('https://api.ipify.org?format=json');
-    const ipData = await ipResponse.json();
+    const ip = await getClientIP();
 
     // Create tracking data
     const trackingData = {
       offer_id: offerId,
-      ip: ipData.ip,
+      ip,
       user_agent: navigator.userAgent,
       aff_sub4: localStorage.getItem('userEmail') || '',
       aff_sub5: 'web_app',
@@ -70,19 +102,13 @@ export async function fetchOffers(): Promise<Offer[]> {
   try {
     console.log('Starting offer fetch...');
 
-    // First try to get the IP address
-    console.log('Fetching IP address...');
-    const ipResponse = await fetch('https://api.ipify.org?format=json');
-    if (!ipResponse.ok) {
-      console.warn('Failed to fetch IP address:', await ipResponse.text());
-      return MOCK_OFFERS;
-    }
-    const ipData = await ipResponse.json();
-    console.log('IP address fetched:', ipData.ip);
+    // Get client IP
+    const ip = await getClientIP();
+    console.log('Using IP:', ip);
 
     // Build the request parameters
     const params = {
-      ip: ipData.ip,
+      ip,
       user_agent: encodeURIComponent(navigator.userAgent),
       ctype: '2', // CPA offers only
       aff_sub4: localStorage.getItem('userEmail') || '',
@@ -91,41 +117,54 @@ export async function fetchOffers(): Promise<Offer[]> {
 
     console.log('Fetching offers with params:', params);
 
-    // Try to fetch from the Netlify function
-    const response = await fetch('/.netlify/functions/offers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        apiKey: API_KEY,
-        params
-      })
-    });
+    // Try to fetch from the Netlify function with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Netlify function error:', errorText);
-      throw new Error(`Netlify function failed: ${response.status} ${errorText}`);
-    }
+    try {
+      const response = await fetch('/.netlify/functions/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: API_KEY,
+          params
+        }),
+        signal: controller.signal
+      });
 
-    const data: ApiResponse = await response.json();
-    console.log('API response:', data);
+      clearTimeout(timeout);
 
-    if (!data.success) {
-      throw new Error(data.error || 'API returned unsuccessful response');
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Netlify function error:', errorText);
+        throw new Error(`Netlify function failed: ${response.status} ${errorText}`);
+      }
 
-    if (data.offers && data.offers.length > 0) {
-      // Return real offers, only use mocks as fallback
-      return data.offers;
+      const data: ApiResponse = await response.json();
+      console.log('API response:', data);
+
+      if (!data.success) {
+        throw new Error(data.error || 'API returned unsuccessful response');
+      }
+
+      if (data.offers && data.offers.length > 0) {
+        return data.offers;
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.warn('Request timed out, using mock offers');
+      } else {
+        console.error('Error fetching offers:', error);
+      }
     }
 
     console.warn('No offers returned from API, using mock offers');
     return MOCK_OFFERS;
 
   } catch (error) {
-    console.error('Error fetching offers:', error);
+    console.error('Error in fetchOffers:', error);
     if (error instanceof Error) {
       console.error('Error details:', {
         message: error.message,
