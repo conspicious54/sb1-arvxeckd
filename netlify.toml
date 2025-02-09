@@ -1,5 +1,5 @@
 [build]
-  command = "CI=false npm run build"
+  command = "npm run typecheck && CI=false npm run build"
   functions = "netlify/functions"
   publish = "dist"
   environment = { NODE_VERSION = "18" }
