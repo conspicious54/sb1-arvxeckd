@@ -19,6 +19,7 @@ export default defineConfig({
     target: 'esnext',
     modulePreload: true,
     sourcemap: true,
+    assetsDir: 'assets',
   },
   server: {
     headers: {
