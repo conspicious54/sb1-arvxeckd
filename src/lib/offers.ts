@@ -36,11 +36,11 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
 
     // Get current multiplier from local storage
     const multiplierData = localStorage.getItem('activeMultiplier');
-    const { value: multiplier = 1 } = multiplierData ? JSON.parse(multiplierData) : {};
+    const { value: userMultiplier = 1 } = multiplierData ? JSON.parse(multiplierData) : {};
 
-    // Convert payout to points (1000 points = $1)
-    const basePoints = Math.round(parseFloat(payout) * 1000);
-    const pointsEarned = Math.round(basePoints * multiplier);
+    // Convert payout to points (3000 points = $1) - 3x the original rate
+    const basePoints = Math.round(parseFloat(payout) * 3000);
+    const pointsEarned = Math.round(basePoints * userMultiplier);
 
     // Insert the offer completion
     const { data: completion, error: completionError } = await supabase
@@ -50,7 +50,7 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
         offer_id: offerId,
         offer_name: offerName,
         points_earned: pointsEarned,
-        multiplier: multiplier
+        multiplier: userMultiplier
       })
       .select()
       .single();
