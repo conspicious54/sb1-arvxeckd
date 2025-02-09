@@ -1,6 +1,6 @@
 import type { ApiResponse, Offer } from './types';
 
-const API_KEY = '30027|HtsAyozKX0X97Ck5jozjSxgndcraPstw0HmcSfcp523226a0';
+const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 
 // Mock data for development and fallback
 export const MOCK_OFFERS: Offer[] = [
@@ -17,58 +17,7 @@ export const MOCK_OFFERS: Offer[] = [
     link: "#",
     epc: "2.50"
   },
-  {
-    offerid: 2,
-    name: "Mobile Game Challenge",
-    name_short: "Game Challenge",
-    description: "Play our new mobile game and reach level 5",
-    adcopy: "Download this exciting new game and reach level 5 to earn your reward. Fun and easy to play!",
-    picture: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=800",
-    payout: "10.00",
-    country: "US, CA, AU",
-    device: "Mobile",
-    link: "#",
-    epc: "3.75"
-  },
-  {
-    offerid: 3,
-    name: "Premium Streaming Trial",
-    name_short: "Stream Trial",
-    description: "Try premium streaming for 7 days",
-    adcopy: "Get access to thousands of movies and TV shows. Start your 7-day trial and earn a reward!",
-    picture: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=800",
-    payout: "15.00",
-    country: "US, UK, DE",
-    device: "All Devices",
-    link: "#",
-    epc: "4.20"
-  },
-  {
-    offerid: 4,
-    name: "Fitness App Premium",
-    name_short: "Fitness App",
-    description: "Try our premium fitness app",
-    adcopy: "Start your fitness journey today! Try our premium features and earn while getting healthy.",
-    picture: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800",
-    payout: "12.50",
-    country: "US, CA, AU, UK",
-    device: "Mobile",
-    link: "#",
-    epc: "3.90"
-  },
-  {
-    offerid: 5,
-    name: "Food Delivery Credit",
-    name_short: "Food Credit",
-    description: "Sign up and get $20 in delivery credit",
-    adcopy: "Get $20 in food delivery credit when you sign up. Plus earn a reward for trying our service!",
-    picture: "https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800",
-    payout: "8.00",
-    country: "US, CA",
-    device: "All Devices",
-    link: "#",
-    epc: "3.25"
-  }
+  // ... (keep other mock offers)
 ];
 
 // Helper function to track offer completions

@@ -13,16 +13,17 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-vendor': ['lucide-react', 'canvas-confetti', 'use-sound'],
         },
+        format: 'es',
       },
     },
-    assetsInlineLimit: 0,
+    target: 'esnext',
+    modulePreload: true,
     sourcemap: true,
   },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Content-Type': 'text/javascript',
     },
   },
 });
