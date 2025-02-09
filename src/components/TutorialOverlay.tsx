@@ -1,43 +1,51 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Gift, ChevronRight, X, DollarSign, Rocket, Users } from 'lucide-react';
 import { useTutorial } from '../context/TutorialContext';
+import { useLocation } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import useSound from 'use-sound';
 
 export function TutorialOverlay() {
   const { showTutorial, currentStep, nextStep, skipTutorial } = useTutorial();
   const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const location = useLocation();
+
+  // Reset transition state when location changes
+  useEffect(() => {
+    setIsTransitioning(false);
+  }, [location.pathname]);
 
   if (!showTutorial) return null;
 
   const steps = [
     {
       title: "Welcome to Your Dashboard!",
-      description: "This is your earning hub where you'll find all available offers. Let's take a quick tour to help you get started!",
+      description: "This is your earning hub where you'll find all available offers. Next, let's check out the rewards section!",
       icon: <Gift className="w-8 h-8 text-green-600" />,
       highlight: ".dashboard-link"
     },
     {
       title: "Redeem Your Earnings",
-      description: "Convert your points into gift cards, cash, or other exciting rewards. The more you earn, the more you can redeem!",
+      description: "Convert your points into gift cards, cash, or other exciting rewards. Now, let's see how you can earn even more!",
       icon: <DollarSign className="w-8 h-8 text-green-600" />,
       highlight: ".rewards-link"
     },
     {
       title: "Share & Multiply",
-      description: "Invite friends and earn 10% of their earnings forever! Plus get 2,000 points for each friend who joins.",
+      description: "Invite friends and earn 10% of their earnings forever! Ready to try something fun?",
       icon: <Users className="w-8 h-8 text-green-600" />,
       highlight: ".share-link"
     },
     {
       title: "Bonus Games",
-      description: "Play our RocketGame for a chance to multiply your earnings up to 10x! The higher you fly, the more you earn.",
+      description: "Play our RocketGame for a chance to multiply your earnings up to 10x! Let's head back to start earning.",
       icon: <Rocket className="w-8 h-8 text-green-600" />,
       highlight: ".rocket-game-link"
     },
     {
       title: "You're All Set!",
-      description: "Congratulations! You've earned 5,000 bonus points. Return to your dashboard and start completing offers to earn even more!",
+      description: "Congratulations! You've earned 5,000 bonus points. Start completing offers to earn even more!",
       icon: <Gift className="w-8 h-8 text-green-600" />,
       highlight: null
     }
@@ -46,6 +54,10 @@ export function TutorialOverlay() {
   const currentStepData = steps[currentStep];
 
   const handleNext = () => {
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+    
     if (currentStep === steps.length - 1) {
       // Trigger celebration effects
       playSuccess();
@@ -55,12 +67,15 @@ export function TutorialOverlay() {
         origin: { y: 0.6 }
       });
     }
+    
     nextStep();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md mx-4 relative animate-fade-in">
+      <div className={`bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md mx-4 relative ${
+        isTransitioning ? 'animate-fade-out' : 'animate-fade-in'
+      }`}>
         <button
           onClick={skipTutorial}
           className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-lg transition-colors"
@@ -89,7 +104,8 @@ export function TutorialOverlay() {
           </button>
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-xl hover:bg-green-700 transition-colors group"
+            disabled={isTransitioning}
+            className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-xl hover:bg-green-700 transition-colors group disabled:opacity-50"
           >
             {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -110,6 +126,17 @@ export function TutorialOverlay() {
           ))}
         </div>
       </div>
+
+      <style>{`
+        @keyframes fade-out {
+          from { opacity: 1; transform: scale(1); }
+          to { opacity: 0; transform: scale(0.95); }
+        }
+
+        .animate-fade-out {
+          animation: fade-out 0.2s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

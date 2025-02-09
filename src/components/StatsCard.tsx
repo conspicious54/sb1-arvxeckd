@@ -92,20 +92,12 @@ export function StatsCard() {
       label: 'Current Points',
       value: stats ? `${stats.total_earnings.toLocaleString()} pts` : '0 pts',
       icon: <Award className="w-5 h-5 text-green-600 dark:text-green-400" />,
-      trend: {
-        value: '12%',
-        positive: true
-      },
       color: 'green'
     },
     {
       label: 'Completed Offers',
       value: stats?.completed_offers.toString() || '0',
       icon: <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-      trend: {
-        value: '8%',
-        positive: true
-      },
       color: 'blue'
     },
     {
@@ -136,18 +128,6 @@ export function StatsCard() {
               <div className={`p-2.5 bg-${stat.color}-50 dark:bg-${stat.color}-900/30 rounded-xl`}>
                 {stat.icon}
               </div>
-              {stat.trend && (
-                <div className={`flex items-center gap-1 ${
-                  stat.trend.positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {stat.trend.positive ? (
-                    <ArrowUp className="w-4 h-4" />
-                  ) : (
-                    <ArrowDown className="w-4 h-4" />
-                  )}
-                  <span className="text-sm font-medium">{stat.trend.value}</span>
-                </div>
-              )}
             </div>
             <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{stat.label}</h4>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>

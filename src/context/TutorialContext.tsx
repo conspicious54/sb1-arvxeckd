@@ -48,26 +48,27 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
   }, [location.pathname]);
 
   const nextStep = () => {
+    // First navigate to the next page
     switch (currentStep) {
-      case 0: // Already on dashboard
-        setCurrentStep(prev => prev + 1);
+      case 0:
+        navigate('/rewards');
         break;
       case 1:
-        navigate('/rewards');
-        setCurrentStep(prev => prev + 1);
+        navigate('/share');
         break;
       case 2:
-        navigate('/share');
-        setCurrentStep(prev => prev + 1);
+        navigate('/rocket-game');
         break;
       case 3:
-        navigate('/rocket-game');
-        setCurrentStep(prev => prev + 1);
+        navigate('/dashboard');
         break;
       case 4:
         completeTutorial();
-        break;
+        return; // Exit early for completion
     }
+
+    // Then update the step counter
+    setCurrentStep(prev => prev + 1);
   };
 
   const skipTutorial = async () => {
