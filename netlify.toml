@@ -1,8 +1,7 @@
 [build]
-  command = "npm install && npm run build"
+  command = "npm run build"
   functions = "netlify/functions"
   publish = "dist"
-  environment = { NODE_VERSION = "18", NODE_ENV = "production", CI = "false" }
 
 [[redirects]]
   from = "/*"
@@ -19,17 +18,12 @@
     X-XSS-Protection = "1; mode=block"
 
 [[headers]]
-  for = "/*.js"
-    [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
-
-[[headers]]
-  for = "/*.mjs"
+  for = "/assets/*.js"
     [headers.values]
     Content-Type = "application/javascript"
 
 [[headers]]
-  for = "/*.css"
+  for = "/assets/*.css"
     [headers.values]
     Content-Type = "text/css"
 
@@ -42,6 +36,3 @@
   command = "npm run dev"
   framework = "#custom"
   targetPort = 5173
-
-[functions]
-  node_bundler = "esbuild"
