@@ -12,6 +12,8 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
   const [showCompletion, setShowCompletion] = useState(false);
   // Multiply points by 30 (1000 points = $1)
   const pointsAmount = Math.round(parseFloat(offer.payout) * 30000);
+  // Calculate cash equivalent (points / 1000)
+  const cashEquivalent = (pointsAmount / 1000).toFixed(2);
 
   const handleComplete = () => {
     onComplete(offer.offerid);
@@ -44,7 +46,7 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                 <div className="absolute bottom-2 left-2">
                   <div className="bg-white/90 backdrop-blur-sm text-green-600 px-2 py-1 rounded-lg text-sm font-bold flex items-center gap-1">
                     <DollarSign className="w-3.5 h-3.5" />
-                    {offer.payout}
+                    {cashEquivalent}
                   </div>
                 </div>
               </div>
@@ -63,7 +65,7 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                   </div>
                   <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-lg h-fit transform translate-y-0 opacity-100 group-hover:-translate-y-1 group-hover:opacity-0 transition-all duration-200">
                     <TrendingUp className="w-3 h-3" />
-                    <span className="text-xs font-medium whitespace-nowrap">Popular</span>
+                    <span className="text-xs font-medium whitespace-nowrap">HIGH</span>
                   </div>
                 </div>
 
@@ -91,7 +93,7 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                       <div className="flex items-baseline gap-1">
                         <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
                         <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                          {offer.payout}
+                          {cashEquivalent}
                         </p>
                         <span className="text-xs text-gray-500 dark:text-gray-400">cash</span>
                       </div>

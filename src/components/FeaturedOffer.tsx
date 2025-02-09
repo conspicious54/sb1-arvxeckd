@@ -12,6 +12,8 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
   const [showCompletion, setShowCompletion] = useState(false);
   // Multiply points by 30 (1000 points = $1)
   const pointsAmount = Math.round(parseFloat(offer.payout) * 30000);
+  // Calculate cash equivalent (points / 1000)
+  const cashEquivalent = (pointsAmount / 1000).toFixed(2);
 
   const handleComplete = () => {
     onComplete(offer.offerid);
@@ -103,7 +105,7 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
                 <div className="text-green-200 text-sm mb-2">Cash Reward</div>
                 <div className="flex items-center justify-center gap-1 mb-2">
                   <DollarSign className="w-8 h-8 text-white" />
-                  <div className="text-4xl font-bold text-white">{offer.payout}</div>
+                  <div className="text-4xl font-bold text-white">{cashEquivalent}</div>
                 </div>
                 <div className="text-green-200 text-sm mb-4">or</div>
                 <div className="text-2xl font-bold text-white mb-1">{pointsAmount.toLocaleString()}</div>
