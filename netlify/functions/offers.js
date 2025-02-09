@@ -6,6 +6,8 @@ exports.handler = async (event) => {
 
     // Build the target URL with required parameters
     const targetUrl = `https://unlockcontent.net/api/v2?${new URLSearchParams(params).toString()}`;
+    
+    console.log('Making request to:', targetUrl);
 
     // Make the request to the API
     const response = await fetch(targetUrl, {
@@ -18,6 +20,7 @@ exports.handler = async (event) => {
     });
 
     const data = await response.json();
+    console.log('API Response:', data);
 
     return {
       statusCode: 200,
@@ -37,7 +40,10 @@ exports.handler = async (event) => {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
       },
-      body: JSON.stringify({ error: 'Failed to fetch offers' })
+      body: JSON.stringify({ 
+        success: false,
+        error: error.message || 'Failed to fetch offers'
+      })
     };
   }
 };

@@ -41,7 +41,6 @@ export async function fetchOffers(): Promise<Offer[]> {
     console.log('Starting offer fetch...');
 
     // First try to get the IP address
-    console.log('Fetching IP address...');
     const ipResponse = await fetch('https://api.ipify.org?format=json');
     if (!ipResponse.ok) {
       throw new Error('Failed to fetch IP address');
@@ -49,12 +48,15 @@ export async function fetchOffers(): Promise<Offer[]> {
     const ipData = await ipResponse.json();
     console.log('IP address fetched:', ipData.ip);
 
+    // Ensure aff_sub4 is a valid string
+    const aff_sub4 = 'myrapidrewards.com'; // Use a fixed domain as default
+
     // Build the request parameters
     const params = {
       ip: ipData.ip,
-      user_agent: encodeURIComponent(navigator.userAgent),
-      ctype: '2', // CPA offers only
-      aff_sub4: localStorage.getItem('userEmail') || '',
+      user_agent: navigator.userAgent,
+      ctype: '2',
+      aff_sub4,
       aff_sub5: 'web_app'
     };
 
@@ -73,18 +75,25 @@ export async function fetchOffers(): Promise<Offer[]> {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
     }
 
     const data: ApiResponse = await response.json();
     console.log('API response:', data);
 
     if (!data.success) {
-      throw new Error(data.error ? JSON.stringify(data.error) : 'API request failed');
+      const errorMessage = data.error 
+        ? typeof data.error === 'string' 
+          ? data.error 
+          : JSON.stringify(data.error)
+        : 'API request failed';
+      throw new Error(errorMessage);
     }
 
     if (!data.offers || !data.offers.length) {
-      throw new Error('No offers available');
+      console.warn('No offers available');
+      return [];
     }
 
     return data.offers;

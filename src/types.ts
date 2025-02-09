@@ -1,3 +1,9 @@
+export interface ApiResponse {
+  success: boolean;
+  error?: any;
+  offers: Offer[] | null;
+}
+
 export interface Offer {
   offerid: number;
   name: string;
@@ -10,12 +16,6 @@ export interface Offer {
   device: string;
   link: string;
   epc: string;
-}
-
-export interface ApiResponse {
-  success: boolean;
-  error: string | null;
-  offers: Offer[];
 }
 
 export interface RewardOption {
