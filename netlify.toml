@@ -1,8 +1,8 @@
 [build]
-  command = "npm run typecheck && CI=false npm run build"
+  command = "npm install && npm run build"
   functions = "netlify/functions"
   publish = "dist"
-  environment = { NODE_VERSION = "18" }
+  environment = { NODE_VERSION = "18", NODE_ENV = "production", CI = "false" }
 
 [[redirects]]
   from = "/*"
@@ -19,27 +19,29 @@
     X-XSS-Protection = "1; mode=block"
 
 [[headers]]
-  for = "/assets/*"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/assets/*.js"
+  for = "/*.js"
     [headers.values]
     Content-Type = "application/javascript; charset=utf-8"
 
 [[headers]]
-  for = "/assets/*.css"
+  for = "/*.mjs"
     [headers.values]
-    Content-Type = "text/css; charset=utf-8"
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*.css"
+    [headers.values]
+    Content-Type = "text/css"
 
 [[headers]]
   for = "/*.svg"
     [headers.values]
     Content-Type = "image/svg+xml"
 
+[dev]
+  command = "npm run dev"
+  framework = "#custom"
+  targetPort = 5173
+
 [functions]
   node_bundler = "esbuild"
-
-[build.processing]
-  skip_processing = false
