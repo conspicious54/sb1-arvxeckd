@@ -1,5 +1,5 @@
-import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign } from 'lucide-react';
 import { useState } from 'react';
+import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign } from 'lucide-react';
 import type { Offer } from '../types';
 import { CompletionPopup } from './CompletionPopup';
 
@@ -10,7 +10,7 @@ interface FeaturedOfferProps {
 
 export function FeaturedOffer({ offer, onComplete }: FeaturedOfferProps) {
   const [showCompletion, setShowCompletion] = useState(false);
-  const pointsAmount = Math.round(parseFloat(offer.payout) * 3000); // Updated to 3000 points per dollar
+  const pointsAmount = Math.round(parseFloat(offer.payout) * 100);
 
   const handleComplete = () => {
     onComplete(offer.offerid);
@@ -19,110 +19,105 @@ export function FeaturedOffer({ offer, onComplete }: FeaturedOfferProps) {
 
   return (
     <>
-      <div className="group relative">
-        {/* Hover Effect Background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-emerald-500/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        <div className="relative bg-gradient-to-br from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 rounded-2xl shadow-xl overflow-hidden">
-          <div className="relative">
-            {offer.picture && (
-              <>
-                <img
-                  src={offer.picture}
-                  alt={offer.name_short}
-                  className="w-full h-72 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-green-900/95 via-green-900/70 to-transparent"></div>
-              </>
-            )}
-            <div className="absolute top-4 left-4 flex gap-2">
-              <div className="bg-yellow-400 text-yellow-900 px-4 py-1.5 rounded-full flex items-center gap-1.5 font-semibold text-sm">
-                <Sparkles className="w-4 h-4" />
-                Featured Offer
-              </div>
-              <div className="bg-white/90 backdrop-blur-sm text-gray-700 px-4 py-1.5 rounded-full flex items-center gap-1.5 font-semibold text-sm">
-                <TrendingUp className="w-4 h-4" />
-                HIGH
-              </div>
+      <div className="bg-gradient-to-br from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 rounded-2xl shadow-xl overflow-hidden">
+        <div className="relative">
+          {offer.picture && (
+            <>
+              <img
+                src={offer.picture}
+                alt={offer.name_short}
+                className="w-full h-72 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-green-900/95 via-green-900/70 to-transparent"></div>
+            </>
+          )}
+          <div className="absolute top-4 left-4 flex gap-2">
+            <div className="bg-yellow-400 text-yellow-900 px-4 py-1.5 rounded-full flex items-center gap-1.5 font-semibold text-sm">
+              <Sparkles className="w-4 h-4" />
+              Featured Offer
+            </div>
+            <div className="bg-white/90 backdrop-blur-sm text-gray-700 px-4 py-1.5 rounded-full flex items-center gap-1.5 font-semibold text-sm">
+              <Star className="w-4 h-4" />
+              Highest Reward
             </div>
           </div>
-          <div className="p-8 relative">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-white/10 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5">
-                    <Star className="w-4 h-4" />
-                    Highest Reward
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5">
-                    <Timer className="w-4 h-4" />
-                    Limited Time
-                  </div>
+        </div>
+        <div className="p-8 relative">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="bg-white/10 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" />
+                  ~15 mins
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-3">{offer.name_short}</h2>
-                <p className="text-green-100 text-lg mb-6 leading-relaxed">{offer.adcopy}</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Timer className="w-4 h-4 text-green-200" />
-                      <span className="text-green-200 text-sm">Time Required</span>
-                    </div>
-                    <p className="text-xl font-semibold text-white">15 mins</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <TrendingUp className="w-4 h-4 text-green-200" />
-                      <span className="text-green-200 text-sm">Popularity</span>
-                    </div>
-                    <p className="text-xl font-semibold text-white">HIGH</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Monitor className="w-4 h-4 text-green-200" />
-                      <span className="text-green-200 text-sm">Device</span>
-                    </div>
-                    <p className="text-xl font-semibold text-white">{offer.device}</p>
-                  </div>
+                <div className="bg-white/10 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4" />
+                  {offer.epc}% Success
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-green-200" />
-                  <div className="flex flex-wrap gap-2">
-                    {offer.country.split(',').map((country) => (
-                      <span 
-                        key={country.trim()} 
-                        className="px-2.5 py-1 bg-white/10 backdrop-blur-sm text-white rounded-lg text-sm"
-                      >
-                        {country.trim()}
-                      </span>
-                    ))}
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-3">{offer.name_short}</h2>
+              <p className="text-green-100 text-lg mb-6 leading-relaxed">{offer.adcopy}</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="w-4 h-4 text-green-200" />
+                    <span className="text-green-200 text-sm">Time Required</span>
                   </div>
+                  <p className="text-xl font-semibold text-white">15 mins</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="w-4 h-4 text-green-200" />
+                    <span className="text-green-200 text-sm">Popularity</span>
+                  </div>
+                  <p className="text-xl font-semibold text-white">{offer.epc}%</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Monitor className="w-4 h-4 text-green-200" />
+                    <span className="text-green-200 text-sm">Device</span>
+                  </div>
+                  <p className="text-xl font-semibold text-white">{offer.device}</p>
                 </div>
               </div>
 
-              <div className="lg:w-80 bg-white/10 backdrop-blur-sm rounded-xl p-6 flex flex-col items-center text-center">
-                <div className="mb-6">
-                  <div className="text-green-200 text-sm mb-2">Cash Reward</div>
-                  <div className="flex items-center justify-center gap-1 mb-2">
-                    <DollarSign className="w-8 h-8 text-white" />
-                    <div className="text-4xl font-bold text-white">{offer.payout}</div>
-                  </div>
-                  <div className="text-green-200 text-sm mb-4">or</div>
-                  <div className="text-2xl font-bold text-white mb-1">{pointsAmount.toLocaleString()}</div>
-                  <div className="text-green-200 text-sm">points</div>
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-green-200" />
+                <div className="flex flex-wrap gap-2">
+                  {offer.country.split(',').map((country) => (
+                    <span 
+                      key={country.trim()} 
+                      className="px-2.5 py-1 bg-white/10 backdrop-blur-sm text-white rounded-lg text-sm"
+                    >
+                      {country.trim()}
+                    </span>
+                  ))}
                 </div>
-                <button
-                  onClick={handleComplete}
-                  className="w-full bg-white hover:bg-green-50 text-green-700 px-6 py-3.5 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2 group shadow-lg"
-                >
-                  Complete Featured Offer
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <p className="text-green-200 text-sm mt-4">
-                  Limited time offer - Complete now!
-                </p>
               </div>
+            </div>
+
+            <div className="lg:w-80 bg-white/10 backdrop-blur-sm rounded-xl p-6 flex flex-col items-center text-center">
+              <div className="mb-6">
+                <div className="text-green-200 text-sm mb-2">Cash Reward</div>
+                <div className="flex items-center justify-center gap-1 mb-2">
+                  <DollarSign className="w-8 h-8 text-white" />
+                  <div className="text-4xl font-bold text-white">{offer.payout}</div>
+                </div>
+                <div className="text-green-200 text-sm mb-4">or</div>
+                <div className="text-2xl font-bold text-white mb-1">{pointsAmount.toLocaleString()}</div>
+                <div className="text-green-200 text-sm">points</div>
+              </div>
+              <button
+                onClick={handleComplete}
+                className="w-full bg-white hover:bg-green-50 text-green-700 px-6 py-3.5 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2 group shadow-lg"
+              >
+                Complete Featured Offer
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <p className="text-green-200 text-sm mt-4">
+                Limited time offer - Complete now!
+              </p>
             </div>
           </div>
         </div>
