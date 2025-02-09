@@ -10,8 +10,17 @@ interface LeaderboardEntry {
   lastActive: string;
 }
 
-// Generate random data
-const generateRandomData = (): LeaderboardEntry[] => {
+// Helper to get today's date as YYYY-MM-DD
+const getTodayKey = () => new Date().toISOString().split('T')[0];
+
+// Helper to mask name (e.g., "John Smith" -> "J******")
+const maskName = (name: string) => {
+  const [first, ...rest] = name.split(' ');
+  return `${first[0]}${'*'.repeat(6)}`;
+};
+
+// Generate consistent random data for a given day
+const generateDailyData = (date: string): LeaderboardEntry[] => {
   const names = [
     'Emma Thompson', 'James Wilson', 'Sophia Chen', 'Lucas Garcia', 'Olivia Brown',
     'Ethan Taylor', 'Ava Martinez', 'Noah Anderson', 'Isabella Lee', 'William Kim',
@@ -20,45 +29,91 @@ const generateRandomData = (): LeaderboardEntry[] => {
     'Victoria Scott', 'Joseph King', 'Grace Baker', 'Samuel Green', 'Chloe Adams'
   ];
 
-  return names.map((name, index) => ({
-    id: `user-${index + 1}`,
-    name,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(' ', '')}`,
-    earnings: parseFloat((Math.random() * 500 + 50).toFixed(2)),
-    completedOffers: Math.floor(Math.random() * 20 + 5),
-    lastActive: `${Math.floor(Math.random() * 59 + 1)}m ago`
-  }));
+  // Use the date string to seed the random numbers
+  const seed = date.split('-').join('');
+  const seededRandom = (index: number) => {
+    const x = Math.sin(Number(seed) + index) * 10000;
+    return x - Math.floor(x);
+  };
+
+  return names.map((name, index) => {
+    // Generate earnings between $5 and $200 based on the date and user index
+    const baseEarnings = 5 + Math.floor(seededRandom(index) * 195);
+    // Time of day affects earnings (later = more earnings)
+    const hourMultiplier = new Date().getHours() / 24;
+    const earnings = Math.floor(baseEarnings * (1 + hourMultiplier));
+
+    return {
+      id: `user-${index + 1}`,
+      name: maskName(name),
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(' ', '')}`,
+      earnings,
+      completedOffers: Math.floor(3 + seededRandom(index + 100) * 17), // 3-20 offers
+      lastActive: `${Math.floor(seededRandom(index + 200) * 59 + 1)}m ago`
+    };
+  });
+};
+
+// Helper to occasionally update an entry
+const updateRandomEntry = (entries: LeaderboardEntry[]): LeaderboardEntry[] => {
+  const index = Math.floor(Math.random() * entries.length);
+  const entry = entries[index];
+  
+  // Small random increase in earnings (1-5 dollars)
+  const increase = 1 + Math.floor(Math.random() * 4);
+  
+  return entries.map((e, i) => 
+    i === index ? {
+      ...e,
+      earnings: e.earnings + increase,
+      completedOffers: e.completedOffers + 1,
+      lastActive: '1m ago'
+    } : e
+  );
 };
 
 export function LeaderboardPage() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [sortBy, setSortBy] = useState<'earnings' | 'offers'>('earnings');
 
-  // Initialize data
+  // Initialize and manage leaderboard data
   useEffect(() => {
-    setLeaderboardData(generateRandomData());
-  }, []);
+    const todayKey = getTodayKey();
+    const storedData = localStorage.getItem(`leaderboard_${todayKey}`);
+    
+    if (storedData) {
+      setLeaderboardData(JSON.parse(storedData));
+    } else {
+      // If no data for today, generate new data
+      const newData = generateDailyData(todayKey);
+      setLeaderboardData(newData);
+      localStorage.setItem(`leaderboard_${todayKey}`, JSON.stringify(newData));
+    }
 
-  // Update random entries periodically
-  useEffect(() => {
-    const updateInterval = setInterval(() => {
-      setLeaderboardData(prevData => {
-        const newData = [...prevData];
-        // Update 2 random entries
-        for (let i = 0; i < 2; i++) {
-          const randomIndex = Math.floor(Math.random() * newData.length);
-          newData[randomIndex] = {
-            ...newData[randomIndex],
-            earnings: parseFloat((Math.random() * 500 + 50).toFixed(2)),
-            completedOffers: Math.floor(Math.random() * 20 + 5),
-            lastActive: `${Math.floor(Math.random() * 59 + 1)}m ago`
-          };
-        }
-        return newData;
+    // Occasionally update random entries
+    const interval = setInterval(() => {
+      setLeaderboardData(prev => {
+        const updated = updateRandomEntry(prev);
+        localStorage.setItem(`leaderboard_${todayKey}`, JSON.stringify(updated));
+        return updated;
       });
-    }, 8000); // Update every 8 seconds
+    }, 30000); // Update every 30 seconds
 
-    return () => clearInterval(updateInterval);
+    // Reset data at midnight
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    const midnightReset = setTimeout(() => {
+      const newData = generateDailyData(getTodayKey());
+      setLeaderboardData(newData);
+      localStorage.setItem(`leaderboard_${getTodayKey()}`, JSON.stringify(newData));
+    }, timeUntilMidnight);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(midnightReset);
+    };
   }, []);
 
   const sortedData = [...leaderboardData].sort((a, b) => 
@@ -68,9 +123,9 @@ export function LeaderboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Top Earners</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Today's Top Earners</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Live leaderboard of today's top performers. Updates every few seconds.
+          Daily leaderboard resets at midnight. Keep completing offers to climb the ranks!
         </p>
       </div>
 
