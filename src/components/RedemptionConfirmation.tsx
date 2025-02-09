@@ -1,8 +1,5 @@
-import { Gift, Clock, AlertTriangle, X, Check, Sparkle } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import useSound from 'use-sound';
+import { Gift, Clock, AlertTriangle, X, Check } from 'lucide-react';
 import type { RewardOption } from '../types';
-import { useState } from 'react';
 
 interface RedemptionConfirmationProps {
   isOpen: boolean;
@@ -22,80 +19,10 @@ export function RedemptionConfirmation({
   reward,
   option
 }: RedemptionConfirmationProps) {
-  const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
-  const [playWin] = useSound('/win.mp3', { volume: 0.4 });
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-
   if (!isOpen) return null;
 
   // Calculate actual points needed after double points discount
   const displayPoints = option.doublePoints ? Math.round(option.points / 2) : option.points;
-  const originalPoints = option.points;
-
-  const handleConfirm = async () => {
-    try {
-      setIsConfirming(true);
-
-      // Start button animation
-      setShowSuccess(true);
-      
-      // Play success sounds
-      playSuccess();
-      setTimeout(() => playWin(), 300);
-
-      // Trigger confetti celebration
-      const duration = 3000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-      function randomInRange(min: number, max: number) {
-        return Math.random() * (max - min) + min;
-      }
-
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-        
-        // Confetti from left side
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
-        });
-
-        // Confetti from right side
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
-        });
-      }, 250);
-
-      // Process redemption
-      await onConfirm();
-
-      // Close modal after celebration
-      setTimeout(() => {
-        clearInterval(interval);
-        setIsConfirming(false);
-        setShowSuccess(false);
-        onClose();
-      }, duration + 500);
-
-    } catch (error) {
-      console.error('Error during redemption:', error);
-      setIsConfirming(false);
-      setShowSuccess(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -109,7 +36,6 @@ export function RedemptionConfirmation({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          disabled={isConfirming}
         >
           <X className="w-5 h-5" />
         </button>
@@ -154,20 +80,16 @@ export function RedemptionConfirmation({
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-gray-600 dark:text-gray-300">Points Required:</span>
-              {option.doublePoints ? (
-                <div className="text-right">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {displayPoints.toLocaleString()} points
-                  </span>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                    {originalPoints.toLocaleString()} points
-                  </div>
-                </div>
-              ) : (
+              <div className="text-right">
                 <span className="font-semibold text-gray-900 dark:text-white">
                   {displayPoints.toLocaleString()} points
                 </span>
-              )}
+                {option.doublePoints && (
+                  <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                    {option.points.toLocaleString()} points
+                  </div>
+                )}
+              </div>
             </div>
             {option.doublePoints && (
               <div className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
@@ -190,37 +112,15 @@ export function RedemptionConfirmation({
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <button
-              onClick={handleConfirm}
-              disabled={isConfirming}
-              className={`
-                w-full px-6 py-3 rounded-xl font-medium transition-all duration-300 
-                flex items-center justify-center gap-2 relative overflow-hidden
-                ${isConfirming ? 'bg-green-500 cursor-wait' : 'bg-green-600 hover:bg-green-700'}
-                ${showSuccess ? 'animate-success' : ''}
-                text-white
-              `}
+              onClick={onConfirm}
+              className="w-full bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
             >
-              <div className="relative flex items-center gap-2">
-                {showSuccess ? (
-                  <>
-                    <Check className="w-5 h-5 animate-bounce" />
-                    <span>Success!</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-5 h-5" />
-                    <span>Confirm Redemption</span>
-                  </>
-                )}
-              </div>
-              {showSuccess && (
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-green-400 to-green-500 animate-shine" />
-              )}
+              <Check className="w-5 h-5" />
+              Confirm Redemption
             </button>
             <button
               onClick={onClose}
-              disabled={isConfirming}
-              className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
@@ -238,23 +138,6 @@ export function RedemptionConfirmation({
             opacity: 1;
             transform: scale(1) translateY(0);
           }
-        }
-
-        @keyframes shine {
-          from {
-            transform: translateX(-100%) rotate(45deg);
-          }
-          to {
-            transform: translateX(100%) rotate(45deg);
-          }
-        }
-
-        .animate-shine {
-          animation: shine 1s infinite;
-        }
-
-        .animate-success {
-          transform: scale(1.05);
         }
       `}</style>
     </div>

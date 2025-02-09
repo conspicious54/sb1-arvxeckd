@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Users, Clock, Award, ArrowUp, ArrowDown } from 'lucide-react';
+import { TrendingUp, Users, Clock, Award } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface UserStats {
   total_earnings: number;
+  available_points: number;
   completed_offers: number;
   streak_count: number;
   last_offer_completion: string | null;
@@ -23,7 +24,7 @@ export function StatsCard() {
         // Initial fetch
         const { data, error } = await supabase
           .from('profiles')
-          .select('total_earnings, completed_offers, streak_count, last_offer_completion')
+          .select('total_earnings, available_points, completed_offers, streak_count, last_offer_completion')
           .eq('id', user.id)
           .single();
 
@@ -89,8 +90,8 @@ export function StatsCard() {
 
   const statItems = [
     {
-      label: 'Current Points',
-      value: stats ? `${stats.total_earnings.toLocaleString()} pts` : '0 pts',
+      label: 'Available Points',
+      value: stats ? `${stats.available_points.toLocaleString()} pts` : '0 pts',
       icon: <Award className="w-5 h-5 text-green-600 dark:text-green-400" />,
       color: 'green'
     },
