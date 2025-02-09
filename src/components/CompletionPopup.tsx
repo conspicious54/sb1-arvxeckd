@@ -21,7 +21,8 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pointsEarned = Math.round(parseFloat(offer.payout) * 1000); // 1000 points = $1
+  // Multiply points by 30 (1000 points = $1)
+  const pointsEarned = Math.round(parseFloat(offer.payout) * 30000);
   const navigate = useNavigate();
 
   useEffect(() => {

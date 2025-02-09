@@ -10,7 +10,8 @@ interface OfferCardProps {
 
 export function OfferCard({ offer, onComplete }: OfferCardProps) {
   const [showCompletion, setShowCompletion] = useState(false);
-  const pointsAmount = Math.round(parseFloat(offer.payout) * 100);
+  // Multiply points by 30 (1000 points = $1)
+  const pointsAmount = Math.round(parseFloat(offer.payout) * 30000);
 
   const handleComplete = () => {
     onComplete(offer.offerid);
