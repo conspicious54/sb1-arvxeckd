@@ -83,6 +83,17 @@ export async function redeemReward(rewardId: string, optionId: string): Promise<
       return { success: false, error: 'Invalid reward option' };
     }
 
+    // Get the reward details
+    const { data: reward } = await supabase
+      .from('rewards')
+      .select('name')
+      .eq('id', rewardId)
+      .single();
+
+    if (!reward) {
+      return { success: false, error: 'Invalid reward' };
+    }
+
     // Calculate actual points needed after double points discount
     const pointsNeeded = option.double_points ? Math.round(option.points / 2) : option.points;
 
@@ -101,8 +112,8 @@ export async function redeemReward(rewardId: string, optionId: string): Promise<
       return { success: false, error: 'Insufficient points' };
     }
 
-    // Start a transaction to redeem the reward
-    const { data: redemption, error: redemptionError } = await supabase
+    // Insert redemption record
+    const { error: redemptionError } = await supabase
       .from('redemptions')
       .insert({
         user_id: user.id,
@@ -110,12 +121,12 @@ export async function redeemReward(rewardId: string, optionId: string): Promise<
         option_id: optionId,
         points_spent: pointsNeeded,
         amount: option.amount,
-        status: 'pending'
-      })
-      .select()
-      .single();
+        status: 'pending',
+        reward_type: reward.name
+      });
 
     if (redemptionError) {
+      console.error('Redemption error:', redemptionError);
       throw redemptionError;
     }
 
@@ -128,6 +139,7 @@ export async function redeemReward(rewardId: string, optionId: string): Promise<
       .eq('id', user.id);
 
     if (updateError) {
+      console.error('Update error:', updateError);
       throw updateError;
     }
 
