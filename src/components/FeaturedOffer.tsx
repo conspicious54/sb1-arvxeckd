@@ -3,12 +3,12 @@ import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, Tren
 import type { Offer } from '../types';
 import { CompletionPopup } from './CompletionPopup';
 
-interface FeaturedOfferProps {
+interface OfferCardProps {
   offer: Offer;
   onComplete: (offerId: number) => void;
 }
 
-export function FeaturedOffer({ offer, onComplete }: FeaturedOfferProps) {
+export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
   const [showCompletion, setShowCompletion] = useState(false);
   const pointsAmount = Math.round(parseFloat(offer.payout) * 100);
 
@@ -19,7 +19,7 @@ export function FeaturedOffer({ offer, onComplete }: FeaturedOfferProps) {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl shadow-xl overflow-hidden group">
         <div className="relative">
           {offer.picture && (
             <>
@@ -52,7 +52,7 @@ export function FeaturedOffer({ offer, onComplete }: FeaturedOfferProps) {
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4" />
-                  {offer.epc}% Success
+                  HIGH
                 </div>
               </div>
               <h2 className="text-3xl font-bold text-white mb-3">{offer.name_short}</h2>
@@ -71,7 +71,7 @@ export function FeaturedOffer({ offer, onComplete }: FeaturedOfferProps) {
                     <TrendingUp className="w-4 h-4 text-green-200" />
                     <span className="text-green-200 text-sm">Popularity</span>
                   </div>
-                  <p className="text-xl font-semibold text-white">{offer.epc}%</p>
+                  <p className="text-xl font-semibold text-white">HIGH</p>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-1">
