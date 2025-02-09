@@ -1,4 +1,6 @@
 import { Gift, Clock, AlertTriangle, X, Check } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import useSound from 'use-sound';
 import type { RewardOption } from '../types';
 
 interface RedemptionConfirmationProps {
@@ -19,10 +21,67 @@ export function RedemptionConfirmation({
   reward,
   option
 }: RedemptionConfirmationProps) {
+  const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
+  const [playWin] = useSound('/win.mp3', { volume: 0.4 });
+
   if (!isOpen) return null;
 
   // Calculate actual points needed after double points discount
   const displayPoints = option.doublePoints ? Math.round(option.points / 2) : option.points;
+
+  const handleConfirm = async () => {
+    try {
+      await onConfirm();
+      
+      // Play success sounds
+      playSuccess();
+      setTimeout(() => playWin(), 300);
+
+      // Trigger confetti celebration
+      const duration = 3000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      function randomInRange(min: number, max: number) {
+        return Math.random() * (max - min) + min;
+      }
+
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        
+        // Confetti from left side
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
+        });
+
+        // Confetti from right side
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
+        });
+      }, 250);
+
+      // Close modal after celebration
+      setTimeout(() => {
+        clearInterval(interval);
+        onClose();
+      }, duration + 500);
+
+    } catch (error) {
+      console.error('Error during redemption:', error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -105,7 +164,7 @@ export function RedemptionConfirmation({
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <button
-              onClick={onConfirm}
+              onClick={handleConfirm}
               className="w-full bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
             >
               <Check className="w-5 h-5" />
