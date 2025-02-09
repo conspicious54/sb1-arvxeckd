@@ -1,36 +1,6 @@
 import type { ApiResponse, Offer } from './types';
 
-const API_KEY = '30027|HtsAyozKX0X97Ck5jozjSxgndcraPstw0HmcSfcp523226a0';
-
-// Mock data for development and fallback
-export const MOCK_OFFERS: Offer[] = [
-  {
-    offerid: 1,
-    name: "Survey Rewards Plus",
-    name_short: "Survey Rewards",
-    description: "Complete a short survey about your shopping habits",
-    adcopy: "Share your opinion and earn rewards instantly! Complete this quick 5-minute survey about your recent shopping experiences.",
-    picture: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800",
-    payout: "5.00",
-    country: "US, UK, CA",
-    device: "All Devices",
-    link: "#",
-    epc: "2.50"
-  },
-  {
-    offerid: 2,
-    name: "Mobile Game Challenge",
-    name_short: "Game Challenge", 
-    description: "Play our new mobile game and reach level 5",
-    adcopy: "Download this exciting new game and reach level 5 to earn your reward. Fun and easy to play!",
-    picture: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=800",
-    payout: "10.00",
-    country: "US, CA, AU",
-    device: "Mobile",
-    link: "#",
-    epc: "3.75"
-  }
-];
+const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 
 // Helper function to track offer completions
 export async function trackOfferCompletion(offerId: number) {
@@ -74,8 +44,7 @@ export async function fetchOffers(): Promise<Offer[]> {
     console.log('Fetching IP address...');
     const ipResponse = await fetch('https://api.ipify.org?format=json');
     if (!ipResponse.ok) {
-      console.warn('Failed to fetch IP address:', await ipResponse.text());
-      return MOCK_OFFERS;
+      throw new Error('Failed to fetch IP address');
     }
     const ipData = await ipResponse.json();
     console.log('IP address fetched:', ipData.ip);
@@ -89,43 +58,42 @@ export async function fetchOffers(): Promise<Offer[]> {
       aff_sub5: 'web_app'
     };
 
-    // Try to fetch from the Netlify function first
-    try {
-      const response = await fetch('/.netlify/functions/offers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          apiKey: API_KEY,
-          params
-        })
-      });
+    console.log('Fetching offers with params:', params);
 
-      if (response.ok) {
-        const data: ApiResponse = await response.json();
-        if (data.success && data.offers && data.offers.length > 0) {
-          // Combine real offers with mock offers to ensure we always have content
-          return [...data.offers, ...MOCK_OFFERS];
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to fetch from Netlify function:', error);
+    // Try to fetch from the Netlify function
+    const response = await fetch('/.netlify/functions/offers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        apiKey: API_KEY,
+        params
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // If all else fails, return mock offers
-    console.log('Using mock offers for development');
-    return MOCK_OFFERS;
+    const data: ApiResponse = await response.json();
+    console.log('API response:', data);
+
+    if (!data.success) {
+      throw new Error(data.error ? JSON.stringify(data.error) : 'API request failed');
+    }
+
+    if (!data.offers || !data.offers.length) {
+      throw new Error('No offers available');
+    }
+
+    return data.offers;
 
   } catch (error) {
-    console.warn('Error fetching offers:', error);
+    console.error('Error fetching offers:', error);
     if (error instanceof Error) {
-      console.warn('Error details:', {
-        message: error.message,
-        stack: error.stack
-      });
+      console.error('Error details:', error.message);
     }
-    // Always return mock offers as fallback
-    return MOCK_OFFERS;
+    throw error;
   }
 }
