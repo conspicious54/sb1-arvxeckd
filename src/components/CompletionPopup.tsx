@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, ChevronRight, DollarSign, PartyPopper, Star, Sparkles } from 'lucide-react';
+import { Gift, Clock, Check, X, AlertCircle, ChevronRight, ArrowRight, Star, TrendingUp, Crown, Target, Rocket, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import useSound from 'use-sound';
 import { completeOffer } from '../lib/offers';
@@ -21,8 +21,8 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Multiply points by 30 (1000 points = $1)
-  const pointsEarned = Math.round(parseFloat(offer.payout) * 30000);
+  // Multiply points by 3 (1000 points = $1)
+  const pointsEarned = Math.round(parseFloat(offer.payout) * 3000);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
               <div className="absolute inset-0 animate-ping bg-green-400 rounded-full opacity-25"></div>
               <div className="relative p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full shadow-lg animate-bounce-subtle">
                 {error ? (
-                  <PartyPopper className="w-8 h-8 text-white" />
+                  <AlertCircle className="w-8 h-8 text-white" />
                 ) : (
                   <Gift className="w-8 h-8 text-white" />
                 )}
@@ -132,7 +132,7 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
                 <Star className="w-4 h-4 text-yellow-900" />
               </div>
               <div className="absolute -bottom-2 -left-2 p-2 bg-blue-500 rounded-full animate-float-medium">
-                <Sparkles className="w-4 h-4 text-white" />
+                <Zap className="w-4 h-4 text-white" />
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
               <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-xl shadow-lg mb-6 animate-fade-in-up hover-card-rise" style={{ animationDelay: '0.4s' }}>
                 <p className="text-green-50 text-sm mb-2">You earned</p>
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <DollarSign className="w-8 h-8 text-white" />
+                  <TrendingUp className="w-8 h-8 text-white" />
                   <span className="text-4xl font-bold text-white animate-gradient-text">
                     {offer.payout}
                   </span>
