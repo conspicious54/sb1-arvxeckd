@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -20,11 +21,19 @@ export default defineConfig({
     modulePreload: true,
     sourcemap: true,
     assetsDir: 'assets',
+    outDir: 'dist',
+    emptyOutDir: true,
+    minify: 'terser',
   },
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
     },
   },
 });
