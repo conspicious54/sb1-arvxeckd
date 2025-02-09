@@ -19,6 +19,8 @@ export default defineConfig({
     target: 'esnext',
     modulePreload: true,
     sourcemap: true,
+    assetsDir: 'assets',
+    copyPublicDir: true,
   },
   server: {
     headers: {
@@ -26,4 +28,5 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
     },
   },
+  publicDir: 'public',
 });

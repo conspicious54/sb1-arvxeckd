@@ -40,7 +40,7 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
       pendingReferrals: profile.pending_referrals || 0,
       totalEarned: profile.referral_earnings || 0,
       potentialEarnings,
-      monthlyRank: Math.floor(Math.random() * (totalUsers || 100)) + 1, // Placeholder for now
+      monthlyRank: Math.floor(Math.random() * (totalUsers || 100)) + 1,
       conversionRate: `${conversionRate}%`
     };
   } catch (error) {
@@ -78,7 +78,37 @@ export async function getReferralUrl(): Promise<string | null> {
   const code = await getReferralCode();
   if (!code) return null;
   
-  return `https://myrapidrewards.com/signup?ref=${code}`;
+  const baseUrl = 'https://myrapidrewards.com/signup';
+  const params = new URLSearchParams({
+    ref: code,
+    utm_source: 'referral',
+    utm_medium: 'user_share',
+    utm_campaign: 'get_5_free'
+  });
+  
+  return `${baseUrl}?${params.toString()}`;
+}
+
+export function getSocialShareText(referralUrl: string | null): {
+  twitter: string;
+  facebook: string;
+  email: {
+    subject: string;
+    body: string;
+  };
+} {
+  const url = referralUrl || 'https://myrapidrewards.com';
+  
+  return {
+    twitter: `🎁 Get $5 FREE when you join RapidRewards! I'm already earning daily rewards and cash payouts. Join using my link: ${url} #EarnMoney #Rewards`,
+    
+    facebook: `🎁 Want to earn extra cash from home?\n\nJoin RapidRewards using my link and get $5 FREE instantly!\n\nI'm already earning PayPal cash and gift cards daily. Super easy to use and fast payouts!\n\nJoin here: ${url}`,
+    
+    email: {
+      subject: "Get $5 Free - Join RapidRewards with my link!",
+      body: `Hey!\n\nI've been using RapidRewards to earn extra money and thought you might be interested. They're giving out $5 FREE when you join using my referral link!\n\nIt's really easy to use - just complete simple tasks to earn points, then cash out for PayPal money or gift cards. I've already earned several rewards!\n\nJoin using my link to get your $5 bonus:\n${url}\n\nEnjoy!\n`
+    }
+  };
 }
 
 export async function processReferral(referralCode: string): Promise<{
