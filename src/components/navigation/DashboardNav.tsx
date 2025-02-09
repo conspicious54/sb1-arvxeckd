@@ -32,8 +32,8 @@ export function DashboardNav({
     { name: 'Offers', path: '/dashboard' },
     { name: 'Rewards', path: '/rewards' },
     { name: 'Leaderboard', path: '/leaderboard' },
-    { name: 'Share & Earn', path: '/share' },
-    { name: 'Rocket Game', path: '/rocket-game', icon: <Rocket className="w-4 h-4" /> },
+    { name: 'Share+Earn', path: '/share' },
+    { name: 'RocketGame', path: '/rocket-game', icon: <Rocket className="w-4 h-4" /> },
   ];
 
   useEffect(() => {
@@ -106,8 +106,8 @@ export function DashboardNav({
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
-        <div className="w-full py-4 flex items-center justify-between gap-8">
-          <div className="flex items-center gap-8">
+        <div className="w-full py-4 flex items-center justify-between">
+          <div className="flex items-center gap-12">
             <Link to="/" className="flex items-center flex-shrink-0">
               <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
                 <DollarSign className="h-6 w-6 text-white" />
@@ -117,15 +117,15 @@ export function DashboardNav({
               </span>
             </Link>
 
-            <div className="hidden lg:flex items-center space-x-8">
+            <div className="hidden lg:flex items-center space-x-4">
               {navigation.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-base font-medium flex items-center gap-2 ${
+                  className={`text-base font-medium flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     location.pathname === link.path
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   {link.icon}
@@ -135,14 +135,14 @@ export function DashboardNav({
             </div>
           </div>
 
-          <div className="flex items-center justify-end flex-1">
-            <div className="hidden lg:flex items-center space-x-8">
+          <div className="flex items-center justify-end flex-1 gap-6">
+            <div className="hidden lg:flex items-center space-x-6">
               <MultiplierBadge />
 
               {/* Points Display */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg">
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg whitespace-nowrap">
                 <DollarSign className="w-4 h-4" />
-                <span className="font-medium">{points.toLocaleString()} pts</span>
+                <span className="font-medium">{points.toLocaleString()}p</span>
               </div>
 
               <button
@@ -158,7 +158,7 @@ export function DashboardNav({
               </button>
 
               <div className="relative group">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <img
                     src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userEmail)}`}
                     alt="User avatar"
