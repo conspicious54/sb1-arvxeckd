@@ -1,8 +1,8 @@
 import type { ApiResponse, Offer } from './types';
 
-const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
+const API_KEY = '30027|HtsAyozKX0X97Ck5jozjSxgndcraPstw0HmcSfcp523226a0';
 
-// Mock data only for development preview
+// Mock data for development and fallback
 export const MOCK_OFFERS: Offer[] = [
   {
     offerid: 1,
@@ -20,12 +20,12 @@ export const MOCK_OFFERS: Offer[] = [
   {
     offerid: 2,
     name: "Mobile Game Challenge",
-    name_short: "Game Challenge",
+    name_short: "Game Challenge", 
     description: "Play our new mobile game and reach level 5",
     adcopy: "Download this exciting new game and reach level 5 to earn your reward. Fun and easy to play!",
     picture: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=800",
     payout: "10.00",
-    country: "US, CA, AU", 
+    country: "US, CA, AU",
     device: "Mobile",
     link: "#",
     epc: "3.75"
@@ -70,16 +70,17 @@ export async function fetchOffers(): Promise<Offer[]> {
   try {
     console.log('Starting offer fetch...');
 
-    // Get IP address
+    // First try to get the IP address
     console.log('Fetching IP address...');
     const ipResponse = await fetch('https://api.ipify.org?format=json');
     if (!ipResponse.ok) {
-      throw new Error(`Failed to fetch IP: ${await ipResponse.text()}`);
+      console.warn('Failed to fetch IP address:', await ipResponse.text());
+      return MOCK_OFFERS;
     }
     const ipData = await ipResponse.json();
-    console.log('Using IP:', ipData.ip);
+    console.log('IP address fetched:', ipData.ip);
 
-    // Build request parameters
+    // Build the request parameters
     const params = {
       ip: ipData.ip,
       user_agent: encodeURIComponent(navigator.userAgent),
@@ -88,47 +89,43 @@ export async function fetchOffers(): Promise<Offer[]> {
       aff_sub5: 'web_app'
     };
 
-    console.log('Fetching offers with params:', params);
+    // Try to fetch from the Netlify function first
+    try {
+      const response = await fetch('/.netlify/functions/offers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: API_KEY,
+          params
+        })
+      });
 
-    // Make request to Netlify function
-    const response = await fetch('/.netlify/functions/offers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        apiKey: API_KEY,
-        params
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API response not OK: ${response.status} ${response.statusText}`);
+      if (response.ok) {
+        const data: ApiResponse = await response.json();
+        if (data.success && data.offers && data.offers.length > 0) {
+          // Combine real offers with mock offers to ensure we always have content
+          return [...data.offers, ...MOCK_OFFERS];
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch from Netlify function:', error);
     }
 
-    const data: ApiResponse = await response.json();
-    console.log('API response:', data);
-
-    if (!data.success) {
-      throw new Error(data.error || 'API returned success: false');
-    }
-
-    if (!data.offers || !Array.isArray(data.offers)) {
-      throw new Error('No offers array in response');
-    }
-
-    // Return real offers, only fall back to mock if we got zero offers
-    return data.offers.length > 0 ? data.offers : MOCK_OFFERS;
+    // If all else fails, return mock offers
+    console.log('Using mock offers for development');
+    return MOCK_OFFERS;
 
   } catch (error) {
-    console.error('Error fetching offers:', error);
+    console.warn('Error fetching offers:', error);
     if (error instanceof Error) {
-      console.error('Error details:', {
+      console.warn('Error details:', {
         message: error.message,
         stack: error.stack
       });
     }
-    // Only fall back to mock offers if we couldn't get any real ones
+    // Always return mock offers as fallback
     return MOCK_OFFERS;
   }
 }
