@@ -21,8 +21,14 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
     option: Reward['options'][0];
   } | null>(null);
   const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
+  const [clickedButton, setClickedButton] = useState<string | null>(null);
 
   const handleRedeem = async (reward: Reward, option: Reward['options'][0]) => {
+    // Add button click effect
+    const buttonId = `${reward.id}-${option.id}`;
+    setClickedButton(buttonId);
+    setTimeout(() => setClickedButton(null), 200);
+
     setSelectedReward({ reward, option });
     setShowConfirmation(true);
   };
@@ -37,25 +43,54 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
         // Play success sound
         playSuccess();
 
-        // Trigger confetti effect
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
+        // Trigger confetti with multiple bursts
+        const count = 200;
+        const defaults = {
+          origin: { y: 0.7 },
+          spread: 360,
+          ticks: 50,
+          gravity: 0.8,
+          decay: 0.94,
+          startVelocity: 30
+        };
+
+        function fire(particleRatio: number, opts: any) {
+          confetti({
+            ...defaults,
+            ...opts,
+            particleCount: Math.floor(count * particleRatio)
+          });
+        }
+
+        fire(0.25, {
+          spread: 26,
+          startVelocity: 55,
         });
 
-        // Show success message with animation
-        const successMessage = document.createElement('div');
-        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in';
-        successMessage.textContent = 'Redemption successful! Check your email for further instructions.';
-        document.body.appendChild(successMessage);
+        fire(0.2, {
+          spread: 60,
+        });
 
-        // Remove message after animation
-        setTimeout(() => {
-          successMessage.classList.add('animate-slide-out');
-          setTimeout(() => successMessage.remove(), 500);
-        }, 3000);
+        fire(0.35, {
+          spread: 100,
+          decay: 0.91,
+          scalar: 0.8
+        });
+
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 25,
+          decay: 0.92,
+          scalar: 1.2
+        });
+
+        fire(0.1, {
+          spread: 120,
+          startVelocity: 45,
+        });
+
+        // Show success message
+        alert('Redemption successful! Check your email for further instructions.');
       } else {
         // Show error message
         alert(result.error || 'Failed to redeem reward');
@@ -103,6 +138,7 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
                 reward={reward}
                 userPoints={userPoints}
                 onRedeem={handleRedeem}
+                clickedButton={clickedButton}
               />
             ))}
           </div>
@@ -117,6 +153,7 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
             reward={reward}
             userPoints={userPoints}
             onRedeem={handleRedeem}
+            clickedButton={clickedButton}
           />
         ))}
       </div>
@@ -138,10 +175,11 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
   );
 }
 
-function FeaturedRewardCard({ reward, userPoints, onRedeem }: {
+function FeaturedRewardCard({ reward, userPoints, onRedeem, clickedButton }: {
   reward: Reward;
   userPoints: number;
   onRedeem: (reward: Reward, option: Reward['options'][0]) => void;
+  clickedButton: string | null;
 }) {
   return (
     <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl overflow-hidden group">
@@ -201,7 +239,9 @@ function FeaturedRewardCard({ reward, userPoints, onRedeem }: {
                   <button
                     onClick={() => onRedeem(reward, option)}
                     disabled={userPoints < displayPoints}
-                    className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                    className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 transform ${
+                      clickedButton === `${reward.id}-${option.id}` ? 'scale-95' : ''
+                    } ${
                       userPoints >= displayPoints
                         ? 'bg-white hover:bg-green-50 text-green-600'
                         : 'bg-white/50 text-white/50 cursor-not-allowed'
@@ -229,10 +269,11 @@ function FeaturedRewardCard({ reward, userPoints, onRedeem }: {
   );
 }
 
-function RegularRewardCard({ reward, userPoints, onRedeem }: {
+function RegularRewardCard({ reward, userPoints, onRedeem, clickedButton }: {
   reward: Reward;
   userPoints: number;
   onRedeem: (reward: Reward, option: Reward['options'][0]) => void;
+  clickedButton: string | null;
 }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-green-50 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 group">
@@ -310,7 +351,9 @@ function RegularRewardCard({ reward, userPoints, onRedeem }: {
                     <button
                       onClick={() => onRedeem(reward, option)}
                       disabled={userPoints < displayPoints}
-                      className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                      className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 transform ${
+                        clickedButton === `${reward.id}-${option.id}` ? 'scale-95' : ''
+                      } ${
                         userPoints >= displayPoints
                           ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-200/50'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
