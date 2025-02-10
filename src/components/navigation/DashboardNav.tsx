@@ -108,14 +108,17 @@ export function DashboardNav({
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="w-full py-4 flex items-center justify-between">
           <div className="flex items-center gap-12">
-            <Link to="/" className="flex items-center flex-shrink-0">
+            <a 
+              href="https://myrapidrewards.com/dashboard" 
+              className="flex items-center flex-shrink-0"
+            >
               <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
                 <DollarSign className="h-6 w-6 text-white" />
               </div>
               <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">
                 RapidRewards
               </span>
-            </Link>
+            </a>
 
             <div className="hidden lg:flex items-center space-x-4">
               {navigation.map((link) => (

@@ -7,8 +7,8 @@ import {
   TestimonialsSection,
   FAQSection,
   CTASection 
-} from './Home/sections';
-import { LivePayoutFeed } from '../components/LivePayoutFeed';
+} from './sections';
+import { LivePayoutFeed } from '../../components/LivePayoutFeed';
 
 export function HomePage() {
   return (
