@@ -17,7 +17,6 @@ interface CompletionPopupProps {
 
 export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps) {
   const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
-  const [playCoins] = useSound('/coins.mp3', { volume: 0.3 });
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,11 +81,6 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
           colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
         });
       }, 250);
-
-      // Play coins sound after a short delay
-      setTimeout(() => {
-        playCoins();
-      }, 500);
 
       return () => clearInterval(interval);
     } catch (err) {
@@ -163,15 +157,15 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <TrendingUp className="w-8 h-8 text-white" />
                   <span className="text-4xl font-bold text-white animate-gradient-text">
-                    {offer.payout}
+                    {pointsEarned.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-green-100 text-sm">or</span>
                   <span className="font-bold text-white">
-                    {pointsEarned.toLocaleString()}
+                    ${offer.payout}
                   </span>
-                  <span className="text-green-100 text-sm">points</span>
+                  <span className="text-green-100 text-sm">cash</span>
                 </div>
               </div>
             )}
