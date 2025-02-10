@@ -3,6 +3,8 @@ import { Star, Sparkles, Timer, Lock, ChevronRight } from 'lucide-react';
 import type { Reward } from '../../lib/rewards';
 import { redeemReward } from '../../lib/rewards';
 import { RedemptionConfirmation } from '../../components/RedemptionConfirmation';
+import confetti from 'canvas-confetti';
+import useSound from 'use-sound';
 
 interface RewardsListProps {
   featuredRewards: Reward[];
@@ -18,6 +20,7 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
     reward: Reward;
     option: Reward['options'][0];
   } | null>(null);
+  const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
 
   const handleRedeem = async (reward: Reward, option: Reward['options'][0]) => {
     setSelectedReward({ reward, option });
@@ -31,8 +34,28 @@ export function RewardsList({ featuredRewards, regularRewards, userPoints, loadi
       const result = await redeemReward(selectedReward.reward.id, selectedReward.option.id);
       
       if (result.success) {
-        // Show success message
-        alert('Redemption successful! Check your email for further instructions.');
+        // Play success sound
+        playSuccess();
+
+        // Trigger confetti effect
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
+        });
+
+        // Show success message with animation
+        const successMessage = document.createElement('div');
+        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in';
+        successMessage.textContent = 'Redemption successful! Check your email for further instructions.';
+        document.body.appendChild(successMessage);
+
+        // Remove message after animation
+        setTimeout(() => {
+          successMessage.classList.add('animate-slide-out');
+          setTimeout(() => successMessage.remove(), 500);
+        }, 3000);
       } else {
         // Show error message
         alert(result.error || 'Failed to redeem reward');
