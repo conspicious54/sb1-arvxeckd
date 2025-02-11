@@ -117,7 +117,7 @@ export function DashboardNav({
                 <img 
                   src="https://i.imgur.com/XhVzGft.png"
                   alt="RapidRewards"
-                  className="h-8 w-auto"
+                  className="h-7 w-auto"
                 />
               </Link>
 
