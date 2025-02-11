@@ -1,5 +1,5 @@
-import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign } from 'lucide-react';
 import { useState } from 'react';
+import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign, Shield, Target } from 'lucide-react';
 import type { Offer } from '../types';
 import { CompletionPopup } from './CompletionPopup';
 
@@ -27,22 +27,30 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-emerald-500/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-green-50 dark:border-gray-700 group-hover:border-green-200 dark:group-hover:border-green-600">
-          <div className="flex h-28">
+          <div className="flex flex-col md:flex-row md:h-32">
+            {/* Image Section */}
             {offer.picture && (
-              <div className="w-28 relative flex-shrink-0 overflow-hidden">
+              <div className="relative w-full md:w-48 h-32 md:h-full flex-shrink-0">
                 <img 
                   src={offer.picture} 
                   alt={offer.name_short}
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-                <div className="absolute top-2 left-2">
-                  <div className="bg-green-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 transform -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                    <Sparkles className="w-3 h-3" />
+                
+                {/* Badges */}
+                <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                  <div className="bg-green-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+                    <Target className="w-3 h-3" />
                     Easy
                   </div>
+                  <div className="bg-blue-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Verified
+                  </div>
                 </div>
-                {/* Cash Reward Badge */}
+
+                {/* Points Badge */}
                 <div className="absolute bottom-2 left-2">
                   <div className="bg-white/90 backdrop-blur-sm text-green-600 px-2 py-1 rounded-lg text-sm font-bold flex items-center gap-1">
                     <DollarSign className="w-3.5 h-3.5" />
@@ -52,42 +60,42 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
               </div>
             )}
             
-            <div className="flex-1 p-4 flex flex-col justify-between relative">
+            {/* Content Section */}
+            <div className="flex-1 p-4 flex flex-col justify-between">
               <div>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-base mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
-                      {offer.name_short}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1 group-hover:line-clamp-2 transition-all duration-300">
-                      {offer.adcopy}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded-lg h-fit transform translate-y-0 opacity-100 group-hover:-translate-y-1 group-hover:opacity-0 transition-all duration-200">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="text-xs font-medium whitespace-nowrap">HIGH</span>
-                  </div>
+                {/* Title and Description */}
+                <div className="mb-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
+                    {offer.name_short}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                    {offer.adcopy}
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-4 mt-2">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <Clock className="w-3 h-3" />
+                    <Clock className="w-3.5 h-3.5" />
                     <span>~15 mins</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <Monitor className="w-3 h-3" />
+                    <Monitor className="w-3.5 h-3.5" />
                     <span>{offer.device}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <Globe className="w-3 h-3" />
+                    <Globe className="w-3.5 h-3.5" />
                     <span>{offer.country.split(',')[0].trim()}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-2">
+              {/* Bottom Section */}
+              <div className="flex items-center justify-between">
+                {/* Points Display */}
                 <div className="transform group-hover:translate-x-2 transition-transform duration-300">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
+                    {/* Cash Amount */}
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Earn</p>
                       <div className="flex items-baseline gap-1">
@@ -95,10 +103,13 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                         <p className="text-lg font-bold text-green-600 dark:text-green-400">
                           {cashEquivalent}
                         </p>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">cash</span>
                       </div>
                     </div>
+
+                    {/* Divider */}
                     <div className="h-8 w-px bg-gray-200 dark:bg-gray-700" />
+
+                    {/* Points Amount */}
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">or</p>
                       <p className="text-base font-medium text-gray-600 dark:text-gray-300">
@@ -107,6 +118,8 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                     </div>
                   </div>
                 </div>
+
+                {/* Start Button */}
                 <button
                   onClick={handleComplete}
                   className="relative overflow-hidden flex items-center gap-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all duration-300 text-sm font-medium group/btn"
