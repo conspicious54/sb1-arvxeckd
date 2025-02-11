@@ -9,14 +9,13 @@ export function LoginPage() {
       {/* Left side - Form */}
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white dark:bg-gray-900">
         <div className="mx-auto w-full max-w-sm">
-        <a href="/" className="flex items-center gap-2 mb-8">
-  <img 
-    src="https://i.imgur.com/XhVzGft.png"
-    alt="RapidRewards"
-    className="h-11 w-auto invert dark:invert-0"
-  />
-</a>
-          </div>
+          <a href="/" className="flex items-center gap-2 mb-8">
+            <img 
+              src="https://i.imgur.com/XhVzGft.png"
+              alt="RapidRewards"
+              className="h-11 w-auto invert dark:invert-0"
+            />
+          </a>
 
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Welcome back
@@ -53,7 +52,7 @@ export function LoginPage() {
         </div>
       </div>
 
-      {/** Right side - Image and Features */}
+      {/* Right side - Image and Features */}
       <div className="hidden lg:block relative flex-1">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/90 to-emerald-600/90"></div>
