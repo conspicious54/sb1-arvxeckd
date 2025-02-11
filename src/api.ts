@@ -4,18 +4,18 @@ const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 
 // Helper function to detect device type and OS
 function getDeviceInfo() {
-  const ua = navigator.userAgent;
+  const ua = navigator.userAgent.toLowerCase();
   let deviceType = 'desktop';
   let os = 'unknown';
 
   // Check if mobile
-  if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
+  if (/mobile|android|iphone|ipad|ipod/i.test(ua)) {
     deviceType = 'mobile';
     
     // Detect specific mobile OS
-    if (/iPhone|iPad|iPod/i.test(ua)) {
+    if (/iphone|ipad|ipod/i.test(ua)) {
       os = 'ios';
-    } else if (/Android/i.test(ua)) {
+    } else if (/android/i.test(ua)) {
       os = 'android';
     }
   }
@@ -130,28 +130,38 @@ export async function fetchOffers(): Promise<Offer[]> {
 
     // Filter offers based on device type and OS
     const filteredOffers = data.offers.filter(offer => {
-      // If we're on mobile, only show mobile offers
+      const offerDevice = offer.device.toLowerCase();
+      
+      // If we're on mobile
       if (deviceType === 'mobile') {
-        if (offer.device.toLowerCase().includes('desktop')) {
+        // Reject desktop-only offers
+        if (offerDevice.includes('desktop')) {
           return false;
         }
-        // If we're on iOS, only show iOS offers
-        if (os === 'ios' && !offer.device.toLowerCase().includes('ios')) {
-          return false;
+        
+        // For iOS devices
+        if (os === 'ios') {
+          return offerDevice.includes('ios') || offerDevice.includes('iphone') || offerDevice.includes('ipad') || offerDevice === 'mobile';
         }
-        // If we're on Android, only show Android offers
-        if (os === 'android' && !offer.device.toLowerCase().includes('android')) {
-          return false;
+        
+        // For Android devices
+        if (os === 'android') {
+          return offerDevice.includes('android') || offerDevice === 'mobile';
         }
+        
+        // For other mobile devices
+        return offerDevice.includes('mobile');
       }
-      // If we're on desktop, only show desktop offers
-      else if (deviceType === 'desktop') {
-        return offer.device.toLowerCase().includes('desktop');
+      
+      // If we're on desktop
+      if (deviceType === 'desktop') {
+        return offerDevice.includes('desktop') || offerDevice === 'all';
       }
-      return true;
+      
+      return true; // Include if no specific device targeting
     });
 
-    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${deviceType} offers`);
+    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${deviceType} (${os}) offers`);
     return filteredOffers;
 
   } catch (error) {

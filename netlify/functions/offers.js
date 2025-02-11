@@ -4,13 +4,23 @@ exports.handler = async (event) => {
   try {
     const { apiKey, params } = JSON.parse(event.body);
 
+    // Add device type to query parameters
+    const queryParams = new URLSearchParams({
+      ...params,
+      device: params.device_type === 'mobile' ? 
+        params.os === 'ios' ? 'ios' :
+        params.os === 'android' ? 'android' : 'mobile'
+        : 'desktop'
+    });
+
     // Build the target URL with required parameters
-    const targetUrl = `https://unlockcontent.net/api/v2?${new URLSearchParams(params).toString()}`;
+    const targetUrl = `https://unlockcontent.net/api/v2?${queryParams.toString()}`;
     
     console.log('Making request to:', targetUrl);
     console.log('With device params:', {
       device_type: params.device_type,
-      os: params.os
+      os: params.os,
+      device: queryParams.get('device')
     });
 
     // Make the request to the API
@@ -19,12 +29,16 @@ exports.handler = async (event) => {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': params.user_agent // Pass through the original user agent
       }
     });
 
     const data = await response.json();
-    console.log('API Response:', data);
+    console.log('API Response:', {
+      success: data.success,
+      offerCount: data.offers?.length || 0
+    });
 
     return {
       statusCode: 200,
