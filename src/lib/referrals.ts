@@ -62,15 +62,9 @@ export async function getReferralUrl(): Promise<string | null> {
   const code = await getReferralCode();
   if (!code) return null;
   
-  const baseUrl = 'https://myrapidrewards.com/signup';
-  const params = new URLSearchParams({
-    ref: code,
-    utm_source: 'referral',
-    utm_medium: 'user_share',
-    utm_campaign: 'get_5_free'
-  });
-  
-  return `${baseUrl}?${params.toString()}`;
+  // Create a shorter URL by using just the referral code
+  const baseUrl = 'https://myrapidrewards.com';
+  return `${baseUrl}/r/${code}`;
 }
 
 export function getSocialShareText(referralUrl: string | null): {
