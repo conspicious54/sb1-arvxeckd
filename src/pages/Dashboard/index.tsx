@@ -82,6 +82,11 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Offers Column */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Mobile Streak Tracker - Only visible on mobile */}
+          <div className="lg:hidden mb-8">
+            <StreakTracker />
+          </div>
+
           {/* Search and Filters */}
           <FilterBar
             onSearch={setSearchQuery}
@@ -97,8 +102,8 @@ export function DashboardPage() {
           />
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-8">
+        {/* Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block space-y-8">
           <StreakTracker />
           <LuckySpinner />
           <RedeemCard />
