@@ -39,12 +39,6 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/auth" element={<Navigate to="/signup" replace />} />
-      
-      {/* Referral route */}
-      <Route path="/r/:code" element={<Navigate to={(location) => {
-        const code = location.pathname.split('/r/')[1];
-        return `/signup?ref=${code}`;
-      }} replace />} />
 
       {/* Public routes with header/footer */}
       <Route

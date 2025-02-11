@@ -5,10 +5,13 @@ exports.handler = async (event) => {
     const { apiKey, params } = JSON.parse(event.body);
 
     // Use the device parameter directly from the client
-    // The client now sends the exact required device label
     const queryParams = new URLSearchParams(params);
     
-    console.log('Making request to API with device:', params.device);
+    console.log('Making request to API with params:', {
+      device: params.device,
+      device_specific: params.device_specific,
+      mobile_only: params.mobile_only
+    });
 
     // Build the target URL with required parameters
     const targetUrl = `https://unlockcontent.net/api/v2?${queryParams.toString()}`;

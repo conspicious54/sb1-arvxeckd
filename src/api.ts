@@ -9,14 +9,12 @@ function getDeviceType(): string {
   // Check for iPhone/iPad
   if (/iphone|ipod/.test(ua)) {
     return 'iPhone';
-  }
-  
-  // Check for Android
-  if (/android/.test(ua)) {
+  } else if (/ipad/.test(ua)) {
+    return 'iPad';
+  } else if (/android/.test(ua)) {
     return 'Android';
   }
   
-  // Default to Desktop
   return 'Desktop';
 }
 
@@ -70,24 +68,25 @@ function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): b
 
   console.log(`Checking compatibility for offer device "${normalizedOfferDevice}" with user device "${normalizedUserDevice}"`);
 
-  // Split by common separators and normalize each device
+  // Split by commas and normalize each device
   const deviceList = normalizedOfferDevice
-    .split(/[,&\s]+/)
-    .map(d => d.trim())
+    .split(',')
+    .map(d => d.trim().toLowerCase())
     .filter(Boolean);
 
   console.log('Device list after splitting:', deviceList);
 
-  // If the offer is for a single device, it must match exactly
-  if (deviceList.length === 1) {
-    const isMatch = deviceList[0] === normalizedUserDevice;
-    console.log(`Single device offer - Match: ${isMatch}`);
-    return isMatch;
+  // Special handling for iOS devices
+  if (normalizedUserDevice === 'iphone' || normalizedUserDevice === 'ipad') {
+    if (deviceList.includes('ios') || deviceList.includes('iphone,ipad')) {
+      console.log('iOS device match found');
+      return true;
+    }
   }
 
-  // For multi-device offers, check if user's device is included
+  // Check if user's device is in the list
   const isCompatible = deviceList.includes(normalizedUserDevice);
-  console.log(`Multi-device offer - Compatible: ${isCompatible}`);
+  console.log(`Device compatibility result: ${isCompatible}`);
   return isCompatible;
 }
 
@@ -112,11 +111,12 @@ export async function fetchOffers(): Promise<Offer[]> {
     const params = {
       ip: ipData.ip,
       user_agent: navigator.userAgent,
-      device, // Use exact device label (Desktop, iPhone, or Android)
+      device, // iPhone, iPad, Android, or Desktop
       ctype: '2',
       aff_sub4: 'myrapidrewards.com',
       aff_sub5: 'web_app',
-      device_only: 'true' // Request device-specific offers
+      device_specific: '1', // Request device-specific offers
+      mobile_only: device !== 'Desktop' ? '1' : '0' // Add this for mobile offers
     };
 
     console.log('Fetching offers with params:', JSON.stringify(params, null, 2));
