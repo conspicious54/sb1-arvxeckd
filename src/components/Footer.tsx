@@ -77,11 +77,14 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
             {/* Brand Column */}
             <div className="lg:col-span-2">
-              <Link to="/" className="flex items-center gap-2 mb-6">
+            <Link 
+                to="/" 
+                className="flex items-center flex-shrink-0"
+              >
                 <img 
                   src="https://i.imgur.com/XhVzGft.png"
                   alt="RapidRewards"
-                  className="h-12 w-auto"
+                  className="h-12 w-auto invert dark:invert-0"
                 />
               </Link>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-sm">

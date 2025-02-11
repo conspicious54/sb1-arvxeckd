@@ -32,13 +32,16 @@ export function LandingNav({
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="w-full py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <img 
-                src="https://i.imgur.com/XhVzGft.png"
-                alt="RapidRewards"
-                className="h-12 w-auto"
-              />
-            </Link>
+          <Link 
+                to="/" 
+                className="flex items-center flex-shrink-0"
+              >
+                <img 
+                  src="https://i.imgur.com/XhVzGft.png"
+                  alt="RapidRewards"
+                  className="h-12 w-auto invert dark:invert-0"
+                />
+              </Link>
             
             <div className="hidden ml-10 space-x-8 lg:block">
               {landingLinks.map((link) => (
