@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { fetchOffers } from '../../api';
 import type { Offer } from '../../types';
 import { StatsCard } from '../../components/StatsCard';
+import { StreakTracker } from '../../components/StreakTracker';
 import { OffersList } from './OffersList';
 import { FilterBar } from './FilterBar';
 import { MobileNotice } from './MobileNotice';
-import { StreakTracker } from '../../components/StreakTracker';
 import { LuckySpinner } from '../../components/LuckySpinner';
 import { RedeemCard } from '../../components/RedeemCard';
 
@@ -74,27 +74,27 @@ export function DashboardPage() {
       <MobileNotice />
 
       {/* Stats Overview */}
-      <div className="mb-12">
+      <div className="mb-8">
         <StatsCard />
+      </div>
+
+      {/* Mobile Streak Tracker */}
+      <div className="block lg:hidden mb-8">
+        <StreakTracker />
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Offers Column */}
         <div className="lg:col-span-2">
-          {/* Mobile Streak Tracker - Only visible on mobile */}
-          <div className="block lg:hidden mb-8">
-            <StreakTracker />
-          </div>
-
           {/* Search and Filters */}
-          <div className="space-y-8">
-            <FilterBar
-              onSearch={setSearchQuery}
-              onFilterChange={setFilters}
-            />
+          <FilterBar
+            onSearch={setSearchQuery}
+            onFilterChange={setFilters}
+          />
 
-            {/* Offers List */}
+          {/* Offers List */}
+          <div className="mt-8">
             <OffersList 
               offers={sortedOffers}
               loading={loading}
