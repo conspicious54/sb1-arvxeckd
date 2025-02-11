@@ -2,22 +2,27 @@ import type { ApiResponse, Offer } from './types';
 
 const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 
-// Helper function to detect device type
-function getDeviceInfo() {
+// Helper function to get device type for API
+function getDeviceType(): string {
   const ua = navigator.userAgent.toLowerCase();
   
   // Check for iPhone/iPad
-  if (/iphone|ipad|ipod/i.test(ua)) {
-    return { device: 'iPhone' };
+  if (/iphone|ipod/.test(ua)) {
+    return 'iPhone';
+  }
+  
+  // Check for iPad specifically
+  if (/ipad/.test(ua)) {
+    return 'iPad';
   }
   
   // Check for Android
-  if (/android/i.test(ua)) {
-    return { device: 'Android' };
+  if (/android/.test(ua)) {
+    return 'Android';
   }
   
   // Default to desktop
-  return { device: 'desktop' };
+  return 'Desktop';
 }
 
 // Helper function to track offer completions
@@ -29,15 +34,15 @@ export async function trackOfferCompletion(offerId: number) {
     const ipResponse = await fetch('https://api.ipify.org?format=json');
     const ipData = await ipResponse.json();
 
-    // Get device info
-    const { device } = getDeviceInfo();
+    // Get device type
+    const device = getDeviceType();
 
     // Create tracking data
     const trackingData = {
       offer_id: offerId,
       ip: ipData.ip,
       user_agent: navigator.userAgent,
-      device: device,
+      device,
       aff_sub4: localStorage.getItem('userEmail') || '',
       aff_sub5: 'web_app',
       timestamp: new Date().toISOString()
@@ -57,46 +62,26 @@ export async function trackOfferCompletion(offerId: number) {
   }
 }
 
-// Helper function to check if an offer is compatible with a device
+// Helper function to check if an offer is compatible with user's device
 function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): boolean {
-  const deviceLower = offerDevice.toLowerCase();
-  
-  // Handle universal offers first
-  if (deviceLower === 'all' || deviceLower === 'any') {
+  // Normalize both strings for comparison
+  const normalizedOfferDevice = offerDevice.trim();
+  const normalizedUserDevice = userDevice.trim();
+
+  // Direct match
+  if (normalizedOfferDevice === normalizedUserDevice) {
     return true;
   }
 
-  // Split device string in case it contains multiple devices
-  const devices = deviceLower.split(/[,\s&|+]+/).map(d => d.trim());
-
-  switch (userDevice) {
-    case 'iPhone':
-      return devices.some(d => 
-        d === 'iphone' || 
-        d === 'ios' || 
-        d === 'mobile' ||
-        d === 'ipad' || 
-        d === 'apple'
-      );
-      
-    case 'Android':
-      return devices.some(d => 
-        d === 'android' || 
-        d === 'mobile' ||
-        d === 'phone'
-      );
-      
-    case 'desktop':
-      return devices.some(d => 
-        d === 'desktop' || 
-        d === 'pc' || 
-        d === 'computer' ||
-        d === 'web'
-      );
-      
-    default:
-      return false;
+  // Handle special cases
+  if (normalizedOfferDevice === 'All' || normalizedOfferDevice === 'all') {
+    return true;
   }
+
+  // Split offer device string in case it contains multiple devices
+  const devices = normalizedOfferDevice.split(/[,&]/);
+  
+  return devices.some(device => device.trim() === normalizedUserDevice);
 }
 
 // Main function to fetch offers
@@ -112,15 +97,15 @@ export async function fetchOffers(): Promise<Offer[]> {
     const ipData = await ipResponse.json();
     console.log('IP address fetched:', ipData.ip);
 
-    // Get device information
-    const { device } = getDeviceInfo();
+    // Get device type
+    const device = getDeviceType();
     console.log('Device detected:', device);
 
     // Build the request parameters
     const params = {
       ip: ipData.ip,
       user_agent: navigator.userAgent,
-      device: device, // Use exact device label required by API
+      device, // Use exact device label (Desktop, iPhone, iPad, or Android)
       ctype: '2',
       aff_sub4: 'myrapidrewards.com',
       aff_sub5: 'web_app'
