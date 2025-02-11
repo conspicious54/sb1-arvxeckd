@@ -1,9 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Gift, Clock, Check, X, AlertCircle, ChevronRight, ArrowRight, Star, TrendingUp, Crown, Target, Rocket, Zap } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import useSound from 'use-sound';
-import { completeOffer } from '../lib/offers';
+import { useState } from 'react';
+import { Gift, Clock, ExternalLink, AlertCircle, ChevronRight, Star, TrendingUp, Crown, Target, Rocket, Zap } from 'lucide-react';
+import { trackOfferStart } from '../lib/offers';
 
 interface CompletionPopupProps {
   isOpen: boolean;
@@ -12,102 +9,32 @@ interface CompletionPopupProps {
     offerid: number;
     name: string;
     payout: string;
+    link: string;
   };
 }
 
 export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps) {
-  const [playSuccess] = useSound('/success.mp3', { volume: 0.5 });
-  const [playCoins] = useSound('/coins.mp3', { volume: 0.3 });
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // First triple the dollar amount, then convert to points (1000 points = $1)
   const tripleAmount = parseFloat(offer.payout) * 3;
   const pointsEarned = Math.round(tripleAmount * 1000);
-  
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isOpen && !isProcessing && !isCompleted) {
-      handleCompletion();
-    }
-  }, [isOpen]);
-
-  const handleCompletion = async () => {
-    if (isProcessing || isCompleted) return;
-    
-    setIsProcessing(true);
-    
+  const handleStartOffer = async () => {
     try {
-      // Process the offer completion
-      const result = await completeOffer(offer.offerid, offer.name, offer.payout);
+      // Track that user started the offer
+      await trackOfferStart(offer.offerid);
       
-      if (!result.success) {
-        console.error('Failed to complete offer:', result.error);
-        setError(result.error);
-        return;
-      }
-
-      setIsCompleted(true);
-
-      // Play success sound
-      playSuccess();
-
-      // Trigger confetti
-      const duration = 4000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-      function randomInRange(min: number, max: number) {
-        return Math.random() * (max - min) + min;
-      }
-
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-        
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
-        });
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
-        });
-      }, 250);
-
-      // Play coins sound after a short delay
-      setTimeout(() => {
-        playCoins();
-      }, 500);
-
-      return () => clearInterval(interval);
+      // Open offer in new tab
+      window.open(offer.link, '_blank');
+      
+      // Close the popup
+      onClose();
     } catch (err) {
-      console.error('Error processing completion:', err);
-      setError('An unexpected error occurred');
-    } finally {
-      setIsProcessing(false);
+      console.error('Error starting offer:', err);
+      setError('Failed to start offer. Please try again.');
     }
   };
-
-  // Reset state when popup closes
-  useEffect(() => {
-    if (!isOpen) {
-      setIsProcessing(false);
-      setIsCompleted(false);
-      setError(null);
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -143,14 +70,14 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
           {/* Content */}
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 animate-fade-in-up">
-              {error ? 'Oops!' : 'Congratulations!'}
+              {error ? 'Oops!' : 'Ready to Earn?'}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               {error ? (
                 error
               ) : (
                 <>
-                  You've successfully completed
+                  You're about to start
                   <br />
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {offer.name}
@@ -162,7 +89,7 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
             {/* Earnings Display */}
             {!error && (
               <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-xl shadow-lg mb-6 animate-fade-in-up hover-card-rise" style={{ animationDelay: '0.4s' }}>
-                <p className="text-green-50 text-sm mb-2">You earned</p>
+                <p className="text-green-50 text-sm mb-2">Potential Earnings</p>
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <TrendingUp className="w-8 h-8 text-white" />
                   <span className="text-4xl font-bold text-white animate-gradient-text">
@@ -178,6 +105,19 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
                 </div>
               </div>
             )}
+
+            {/* Instructions */}
+            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-4 mb-6 text-left">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Important Instructions
+              </h3>
+              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
+                <li>• Complete all required steps to earn rewards</li>
+                <li>• Points will be awarded after verification</li>
+                <li>• This may take up to 24 hours</li>
+              </ul>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -192,18 +132,17 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
             ) : (
               <>
                 <button
-                  onClick={() => navigate('/rewards')}
+                  onClick={handleStartOffer}
                   className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-2 group shadow-lg shadow-green-200 dark:shadow-none pulse-glow"
                 >
-                  <Gift className="w-5 h-5" />
-                  Redeem Rewards
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Start Offer
+                  <ExternalLink className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button
                   onClick={onClose}
                   className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
                 >
-                  Keep Earning
+                  Cancel
                 </button>
               </>
             )}

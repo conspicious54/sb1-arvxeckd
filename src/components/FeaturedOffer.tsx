@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign } from 'lucide-react';
 import type { Offer } from '../types';
-import { CompletionPopup } from './CompletionPopup';
+import { trackOfferStart } from '../lib/offers';
 
 interface OfferCardProps {
   offer: Offer;
@@ -9,20 +9,21 @@ interface OfferCardProps {
 }
 
 export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
-  const [showCompletion, setShowCompletion] = useState(false);
   // Multiply points by 3 (1000 points = $1)
   const pointsAmount = Math.round(parseFloat(offer.payout) * 3000);
   // Calculate cash equivalent (points / 1000)
   const cashEquivalent = (pointsAmount / 1000).toFixed(2);
 
-  const handleComplete = () => {
-    onComplete(offer.offerid);
-    setShowCompletion(true);
+  const handleStartOffer = async () => {
+    // Track that user started the offer
+    await trackOfferStart(offer.offerid);
+    
+    // Open offer in new tab
+    window.open(offer.link, '_blank');
   };
 
   return (
-    <>
-      <div className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl shadow-xl overflow-hidden group">
+    <div className="bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl shadow-xl overflow-hidden group">
         <div className="relative">
           {offer.picture && (
             <>
@@ -113,11 +114,11 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
                   <div className="text-xs md:text-sm text-green-200">points</div>
                 </div>
                 <button
-                  onClick={handleComplete}
+                  onClick={handleStartOffer}
                   className="w-full bg-white hover:bg-green-50 text-green-700 px-4 md:px-6 py-2 md:py-3.5 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2 group shadow-lg"
                 >
-                  Complete Featured Offer
-                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
+                  Start Featured Offer
+                  <ExternalLink className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <p className="text-xs md:text-sm text-green-200 mt-2 md:mt-4">
                   Limited time offer - Complete now!
@@ -126,13 +127,6 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
             </div>
           </div>
         </div>
-      </div>
-
-      <CompletionPopup
-        isOpen={showCompletion}
-        onClose={() => setShowCompletion(false)}
-        offer={offer}
-      />
-    </>
+    </div>
   );
 }
