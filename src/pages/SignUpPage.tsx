@@ -113,7 +113,7 @@ export function SignUpPage() {
   <img 
     src="https://i.imgur.com/XhVzGft.png"
     alt="RapidRewards"
-    className="h-8 w-auto"
+    className="h-8 w-auto dark:invert-0 invert"
   />
 </Link>
 
