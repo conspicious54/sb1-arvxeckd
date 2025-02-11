@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { processReferral } from '../../lib/referrals';
 
 export function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -21,13 +22,7 @@ export function SignUpForm() {
       // Create new account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
-        password,
-        options: {
-          data: {
-            email,
-            referral_code: referralCode || null
-          }
-        }
+        password
       });
 
       if (signUpError) {
@@ -39,24 +34,23 @@ export function SignUpForm() {
         return;
       }
 
-      if (authData.user) {
-        // Process referral if code exists
-        if (referralCode) {
-          const { error: referralError } = await supabase
-            .from('profiles')
-            .update({ referred_by: referralCode })
-            .eq('id', authData.user.id);
-
-          if (referralError) {
-            console.error('Error processing referral:', referralError);
-          }
-        }
-
-        // Navigate to dashboard
-        navigate('/dashboard');
-      } else {
+      if (!authData.user) {
         throw new Error('Failed to create user account');
       }
+
+      // Process referral if code exists
+      if (referralCode) {
+        console.log('Processing referral with code:', referralCode);
+        const { success, error: referralError } = await processReferral(referralCode);
+        
+        if (!success) {
+          console.error('Referral processing error:', referralError);
+          // Don't throw error here - we still want to complete signup
+        }
+      }
+
+      // Navigate to dashboard
+      navigate('/dashboard');
     } catch (err) {
       console.error('Signup error:', err);
       setError(
@@ -73,8 +67,15 @@ export function SignUpForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
+        </div>
+      )}
+
+      {referralCode && (
+        <div className="bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg">
+          <p className="font-medium">Referral code applied!</p>
+          <p className="text-sm">You'll receive 5,000 bonus points upon signup.</p>
         </div>
       )}
 
