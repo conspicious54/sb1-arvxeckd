@@ -108,7 +108,7 @@ export function ShareEarnPage() {
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
           Share & Earn{' '}
           <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-transparent bg-clip-text">
-            5,000 Points ($5)
+            5,000 Points
           </span>
           {' '}Per Referral
         </h1>

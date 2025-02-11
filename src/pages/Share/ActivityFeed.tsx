@@ -57,7 +57,7 @@ export function ActivityFeed() {
                 <p className="text-gray-900 dark:text-white font-medium">
                   {activity.user}
                   {' '}
-                  {activity.action === 'joined' && 'joined using your referral link'}
+                  {activity.action === 'joined' && 'joined using a referral link'}
                   {activity.action === 'completed' && 'completed their first offer'}
                   {activity.action === 'milestone' && 'reached a milestone'}
                 </p>
