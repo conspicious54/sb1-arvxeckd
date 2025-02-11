@@ -4,6 +4,7 @@ import { TutorialProvider } from './context/TutorialContext';
 import { AuthLayout } from './components/auth/AuthLayout';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { RedemptionNotification } from './components/RedemptionNotification';
+import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { AppRoutes } from './routes';
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
             <AppRoutes />
             <TutorialOverlay />
             <RedemptionNotification />
+            <AddToHomeScreen />
           </AuthLayout>
         </TutorialProvider>
       </Router>
