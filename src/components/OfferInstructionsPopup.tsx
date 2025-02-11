@@ -50,6 +50,8 @@ export function OfferInstructionsPopup({ isOpen, onClose, offer, onStart }: Offe
 
   // Get instructions based on offer type
   const getInstructions = () => {
+    const offerInstructions = offer.adcopy;
+
     switch (offerType) {
       case 'app_install':
         return [
@@ -59,8 +61,8 @@ export function OfferInstructionsPopup({ isOpen, onClose, offer, onStart }: Offe
             icon: <Download className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
-            title: 'Open and complete setup',
-            description: 'Launch the app and follow initial setup',
+            title: 'Complete Required Steps',
+            description: offerInstructions,
             icon: <Smartphone className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
@@ -78,8 +80,8 @@ export function OfferInstructionsPopup({ isOpen, onClose, offer, onStart }: Offe
             icon: <Mail className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
-            title: 'Confirm email',
-            description: 'Click the confirmation link sent to you',
+            title: 'Complete Required Steps',
+            description: offerInstructions,
             icon: <ChevronRight className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
@@ -97,8 +99,8 @@ export function OfferInstructionsPopup({ isOpen, onClose, offer, onStart }: Offe
             icon: <Smartphone className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
-            title: 'Submit PIN code',
-            description: 'Enter the PIN sent via SMS',
+            title: 'Complete Required Steps',
+            description: offerInstructions,
             icon: <CreditCard className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
@@ -116,8 +118,8 @@ export function OfferInstructionsPopup({ isOpen, onClose, offer, onStart }: Offe
             icon: <ChevronRight className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
-            title: 'Submit information',
-            description: 'Ensure all details are accurate',
+            title: 'Complete Required Steps',
+            description: offerInstructions,
             icon: <ChevronRight className="w-4 h-4 text-green-600 dark:text-green-400" />
           },
           {
