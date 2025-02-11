@@ -81,25 +81,27 @@ export function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Offers Column */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2">
           {/* Mobile Streak Tracker - Only visible on mobile */}
-          <div className="lg:hidden mb-8">
+          <div className="block lg:hidden mb-8">
             <StreakTracker />
           </div>
 
           {/* Search and Filters */}
-          <FilterBar
-            onSearch={setSearchQuery}
-            onFilterChange={setFilters}
-          />
+          <div className="space-y-8">
+            <FilterBar
+              onSearch={setSearchQuery}
+              onFilterChange={setFilters}
+            />
 
-          {/* Offers List */}
-          <OffersList 
-            offers={sortedOffers}
-            loading={loading}
-            error={error}
-            onComplete={handleOfferComplete}
-          />
+            {/* Offers List */}
+            <OffersList 
+              offers={sortedOffers}
+              loading={loading}
+              error={error}
+              onComplete={handleOfferComplete}
+            />
+          </div>
         </div>
 
         {/* Sidebar - Hidden on mobile */}
