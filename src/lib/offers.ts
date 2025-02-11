@@ -42,8 +42,18 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
     const { value: multiplier = 1 } = multiplierData ? JSON.parse(multiplierData) : {};
 
     // Convert payout to points (1000 points = $1)
-    const basePoints = Math.round(parseFloat(payout) * 1000);
-    const pointsEarned = Math.round(basePoints * multiplier);
+    // First multiply payout by 3 for the base tripled value, then convert to points
+    const baseAmount = parseFloat(payout) * 3; // Triple the dollar amount first
+    const basePoints = Math.round(baseAmount * 1000); // Convert to points (1000 points = $1)
+    const pointsEarned = Math.round(basePoints * multiplier); // Apply any active multiplier
+
+    console.log('Points calculation:', {
+      originalPayout: payout,
+      tripledAmount: baseAmount,
+      basePoints,
+      multiplier,
+      finalPoints: pointsEarned
+    });
 
     // Start a transaction-like sequence
     // 1. Insert the offer completion
