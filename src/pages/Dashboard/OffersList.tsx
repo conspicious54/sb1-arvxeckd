@@ -11,8 +11,8 @@ interface OffersListProps {
 }
 
 export function OffersList({ offers, loading, error, onComplete }: OffersListProps) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const OFFERS_PER_PAGE = 5;
+  const [activeTab, setActiveTab] = useState(0);
+  const OFFERS_PER_TAB = 5;
 
   if (loading) {
     return (
@@ -38,11 +38,11 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
     featuredOffer ? offer.offerid !== featuredOffer.offerid : true
   );
 
-  // Calculate pagination
-  const totalPages = Math.ceil(regularOffers.length / OFFERS_PER_PAGE);
-  const startIndex = currentPage * OFFERS_PER_PAGE;
-  const endIndex = startIndex + OFFERS_PER_PAGE;
-  const currentPageOffers = regularOffers.slice(startIndex, endIndex);
+  // Split offers into tabs
+  const totalTabs = Math.ceil(regularOffers.length / OFFERS_PER_TAB);
+  const tabOffers = Array.from({ length: totalTabs }, (_, i) => 
+    regularOffers.slice(i * OFFERS_PER_TAB, (i + 1) * OFFERS_PER_TAB)
+  );
 
   return (
     <div className="space-y-8">
@@ -64,13 +64,13 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
             Available Offers
           </h2>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Showing {startIndex + 1}-{Math.min(endIndex, regularOffers.length)} of {regularOffers.length}
+            {regularOffers.length} offers available
           </div>
         </div>
 
-        {/* Current Page Offers */}
+        {/* Offers in Current Tab */}
         <div className="space-y-6">
-          {currentPageOffers.map((offer) => (
+          {tabOffers[activeTab]?.map((offer) => (
             <OfferCard
               key={offer.offerid}
               offer={offer}
@@ -79,24 +79,34 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
           ))}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-6 border-t border-gray-100 dark:border-gray-800">
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentPage(index)}
-                className={`
-                  min-w-[40px] h-10 px-4 rounded-lg font-medium transition-all duration-200
-                  ${currentPage === index
-                    ? 'bg-green-600 text-white shadow-lg shadow-green-100 dark:shadow-none'
-                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-                  }
-                `}
-              >
-                {index + 1}
-              </button>
-            ))}
+        {/* Tabs Navigation */}
+        {totalTabs > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-6">
+            <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+              {tabOffers.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveTab(index)}
+                  className={`
+                    relative px-6 py-2 rounded-lg font-medium text-sm transition-all duration-200
+                    ${activeTab === index
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                    }
+                  `}
+                >
+                  {/* Active Tab Background */}
+                  {activeTab === index && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg transition-all duration-200" />
+                  )}
+                  
+                  {/* Tab Content */}
+                  <span className="relative z-10">
+                    Tab {index + 1}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
