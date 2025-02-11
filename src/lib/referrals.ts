@@ -20,8 +20,8 @@ export async function getReferralStats(userId: string): Promise<ReferralStats> {
       throw new Error('Profile not found');
     }
 
-    // Calculate potential earnings (pending referrals * 2000 points)
-    const potentialEarnings = profile.pending_referrals * 2000;
+    // Calculate potential earnings (pending referrals * 5000 points)
+    const potentialEarnings = profile.pending_referrals * 5000;
 
     return {
       totalReferrals: profile.total_referrals || 0,
@@ -99,13 +99,21 @@ export async function processReferral(referralCode: string): Promise<{
   success: boolean;
   error?: string;
 }> {
+  const client = supabase;
+  
   try {
     if (!referralCode) {
       return { success: false, error: 'Invalid referral code' };
     }
 
+    // Get current user
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
     // Get the referrer's profile
-    const { data: referrer } = await supabase
+    const { data: referrer } = await client
       .from('profiles')
       .select('id')
       .eq('referral_code', referralCode)
@@ -116,14 +124,8 @@ export async function processReferral(referralCode: string): Promise<{
       return { success: false, error: 'Invalid referral code' };
     }
 
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: 'Not authenticated' };
-    }
-
     // Check if user is already referred
-    const { data: existingReferral } = await supabase
+    const { data: existingReferral } = await client
       .from('profiles')
       .select('referred_by')
       .eq('id', user.id)
@@ -133,32 +135,29 @@ export async function processReferral(referralCode: string): Promise<{
       return { success: false, error: 'User already has a referrer' };
     }
 
-    // Update the user's profile with the referrer
-    const { error: updateError } = await supabase
+    // Start a transaction-like sequence
+    // 1. Update referred user's profile
+    const { error: userError } = await client
       .from('profiles')
-      .update({ 
+      .update({
         referred_by: referrer.id,
-        available_points: 5000, // Give signup bonus to referred user
+        available_points: 5000,
         total_earnings: 5000
       })
       .eq('id', user.id);
 
-    if (updateError) {
-      throw updateError;
-    }
+    if (userError) throw userError;
 
-    // Increment pending referrals for the referrer
-    const { error: referrerError } = await supabase
+    // 2. Update referrer's profile
+    const { error: referrerError } = await client
       .from('profiles')
       .update({
-        pending_referrals: supabase.sql`pending_referrals + 1`,
-        total_referrals: supabase.sql`total_referrals + 1`
+        pending_referrals: client.sql`pending_referrals + 1`,
+        total_referrals: client.sql`total_referrals + 1`
       })
       .eq('id', referrer.id);
 
-    if (referrerError) {
-      throw referrerError;
-    }
+    if (referrerError) throw referrerError;
 
     return { success: true };
   } catch (error) {
@@ -170,11 +169,12 @@ export async function processReferral(referralCode: string): Promise<{
   }
 }
 
-// New function to handle referral offer completion
 export async function handleReferralOfferCompletion(userId: string): Promise<void> {
+  const client = supabase;
+  
   try {
     // Get user's referrer
-    const { data: profile } = await supabase
+    const { data: profile } = await client
       .from('profiles')
       .select('referred_by')
       .eq('id', userId)
@@ -182,16 +182,36 @@ export async function handleReferralOfferCompletion(userId: string): Promise<voi
 
     if (!profile?.referred_by) return; // User wasn't referred
 
-    // Update referrer's stats
-    await supabase
+    // Start a transaction-like sequence
+    // 1. Update referrer's stats
+    const { error: referrerError } = await client
       .from('profiles')
       .update({
-        pending_referrals: supabase.sql`pending_referrals - 1`,
-        available_points: supabase.sql`available_points + 5000`,
-        total_earnings: supabase.sql`total_earnings + 5000`,
-        referral_earnings: supabase.sql`referral_earnings + 5000`
+        pending_referrals: client.sql`pending_referrals - 1`,
+        available_points: client.sql`available_points + 5000`,
+        total_earnings: client.sql`total_earnings + 5000`,
+        referral_earnings: client.sql`referral_earnings + 5000`
       })
       .eq('id', profile.referred_by);
+
+    if (referrerError) {
+      console.error('Error updating referrer stats:', referrerError);
+      throw referrerError;
+    }
+
+    // 2. Record the referral earning
+    const { error: earningError } = await client
+      .from('referral_earnings')
+      .insert({
+        referrer_id: profile.referred_by,
+        referred_id: userId,
+        points_earned: 5000
+      });
+
+    if (earningError) {
+      console.error('Error recording referral earning:', earningError);
+      throw earningError;
+    }
 
   } catch (error) {
     console.error('Error processing referral offer completion:', error);

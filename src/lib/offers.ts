@@ -3,6 +3,8 @@ import { updateStreak } from './streaks';
 import { handleReferralOfferCompletion } from './referrals';
 
 export async function completeOffer(offerId: number, offerName: string, payout: string) {
+  const client = supabase;
+  
   try {
     // Validate required fields
     if (!offerId) {
@@ -27,7 +29,7 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
     }
 
     // Get authenticated user
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await client.auth.getUser();
     if (!user) {
       return {
         success: false,
@@ -43,8 +45,9 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
     const basePoints = Math.round(parseFloat(payout) * 1000);
     const pointsEarned = Math.round(basePoints * multiplier);
 
-    // Insert the offer completion
-    const { data: completion, error: completionError } = await supabase
+    // Start a transaction-like sequence
+    // 1. Insert the offer completion
+    const { data: completion, error: completionError } = await client
       .from('offer_completions')
       .insert({
         user_id: user.id,
@@ -64,10 +67,10 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
       };
     }
 
-    // Update streak
+    // 2. Update streak
     await updateStreak();
 
-    // Handle referral completion rewards
+    // 3. Handle referral completion rewards
     await handleReferralOfferCompletion(user.id);
 
     return {
