@@ -59,11 +59,19 @@ export async function trackOfferCompletion(offerId: number) {
 
 // Helper function to check if an offer is compatible with user's device
 function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): boolean {
-  if (!offerDevice) return false;
+  if (!offerDevice) {
+    console.log('No device specified for offer');
+    return false;
+  }
   
   // Normalize strings
   const normalizedOfferDevice = offerDevice.toLowerCase().trim();
   const normalizedUserDevice = userDevice.toLowerCase().trim();
+
+  console.log('Comparing devices:', {
+    normalizedOfferDevice,
+    normalizedUserDevice
+  });
 
   // Split by common separators and normalize each device
   const deviceList = normalizedOfferDevice
@@ -71,33 +79,35 @@ function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): b
     .map(d => d.trim())
     .filter(Boolean);
 
-  // Log device compatibility check
-  console.log('Checking device compatibility:', {
-    offerDevice: normalizedOfferDevice,
-    userDevice: normalizedUserDevice,
-    deviceList
-  });
+  console.log('Device list after splitting:', deviceList);
 
   // Direct match
   if (deviceList.includes(normalizedUserDevice)) {
+    console.log('Direct device match found');
     return true;
   }
 
   // Handle special cases
   if (deviceList.includes('all')) {
+    console.log('Offer is compatible with all devices');
     return true;
   }
 
   // Handle iOS devices
   if (normalizedUserDevice === 'iphone') {
-    return deviceList.includes('ios') || deviceList.includes('iphone');
+    const isIosCompatible = deviceList.includes('ios') || deviceList.includes('iphone');
+    console.log('iOS device compatibility:', isIosCompatible);
+    return isIosCompatible;
   }
 
   // Handle Android devices
   if (normalizedUserDevice === 'android') {
-    return deviceList.includes('android');
+    const isAndroidCompatible = deviceList.includes('android');
+    console.log('Android device compatibility:', isAndroidCompatible);
+    return isAndroidCompatible;
   }
 
+  console.log('No device compatibility match found');
   return false;
 }
 
@@ -128,7 +138,7 @@ export async function fetchOffers(): Promise<Offer[]> {
       aff_sub5: 'web_app'
     };
 
-    console.log('Fetching offers with params:', params);
+    console.log('Fetching offers with params:', JSON.stringify(params, null, 2));
 
     // Try to fetch from the Netlify function
     const response = await fetch('/.netlify/functions/offers', {
@@ -151,7 +161,10 @@ export async function fetchOffers(): Promise<Offer[]> {
     console.log('API Response:', {
       success: data.success,
       offerCount: data.offers?.length || 0,
-      device
+      firstOffer: data.offers?.[0] ? {
+        name: data.offers[0].name_short,
+        device: data.offers[0].device
+      } : null
     });
 
     if (!data.success) {
@@ -171,16 +184,18 @@ export async function fetchOffers(): Promise<Offer[]> {
     // Log raw offers before filtering
     console.log('Raw offers before filtering:', data.offers.map(o => ({
       name: o.name_short,
-      device: o.device
+      device: o.device,
+      offerid: o.offerid
     })));
 
     // Filter offers based on device compatibility
     const filteredOffers = data.offers.filter(offer => {
-      const isCompatible = isOfferCompatibleWithDevice(offer.device, device);
-      if (!isCompatible) {
-        console.log(`Offer ${offer.name_short} (${offer.device}) not compatible with ${device}`);
-      }
-      return isCompatible;
+      console.log(`Checking offer ${offer.name_short} (ID: ${offer.offerid}):`, {
+        offerDevice: offer.device,
+        userDevice: device,
+        isCompatible: isOfferCompatibleWithDevice(offer.device, device)
+      });
+      return isOfferCompatibleWithDevice(offer.device, device);
     });
 
     console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${device}-compatible offers`);
