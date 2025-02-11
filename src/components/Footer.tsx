@@ -81,7 +81,7 @@ export function Footer() {
                 <img 
                   src="https://i.imgur.com/XhVzGft.png"
                   alt="RapidRewards"
-                  className="h-9 w-auto"
+                  className="h-13 w-auto"
                 />
               </Link>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-sm">
