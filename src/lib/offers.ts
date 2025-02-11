@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { updateStreak } from './streaks';
+import { handleReferralOfferCompletion } from './referrals';
 
 export async function completeOffer(offerId: number, offerName: string, payout: string) {
   try {
@@ -65,6 +66,9 @@ export async function completeOffer(offerId: number, offerName: string, payout: 
 
     // Update streak
     await updateStreak();
+
+    // Handle referral completion rewards
+    await handleReferralOfferCompletion(user.id);
 
     return {
       success: true,

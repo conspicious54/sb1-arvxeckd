@@ -62,9 +62,15 @@ export async function getReferralUrl(): Promise<string | null> {
   const code = await getReferralCode();
   if (!code) return null;
   
-  // Create a shorter URL by using just the referral code
-  const baseUrl = 'https://myrapidrewards.com';
-  return `${baseUrl}/r/${code}`;
+  const baseUrl = 'https://myrapidrewards.com/signup';
+  const params = new URLSearchParams({
+    ref: code,
+    utm_source: 'referral',
+    utm_medium: 'user_share',
+    utm_campaign: 'get_5_free'
+  });
+  
+  return `${baseUrl}?${params.toString()}`;
 }
 
 export function getSocialShareText(referralUrl: string | null): {
@@ -130,7 +136,11 @@ export async function processReferral(referralCode: string): Promise<{
     // Update the user's profile with the referrer
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ referred_by: referrer.id })
+      .update({ 
+        referred_by: referrer.id,
+        available_points: 5000, // Give signup bonus to referred user
+        total_earnings: 5000
+      })
       .eq('id', user.id);
 
     if (updateError) {
@@ -141,7 +151,8 @@ export async function processReferral(referralCode: string): Promise<{
     const { error: referrerError } = await supabase
       .from('profiles')
       .update({
-        pending_referrals: supabase.sql`pending_referrals + 1`
+        pending_referrals: supabase.sql`pending_referrals + 1`,
+        total_referrals: supabase.sql`total_referrals + 1`
       })
       .eq('id', referrer.id);
 
@@ -156,5 +167,33 @@ export async function processReferral(referralCode: string): Promise<{
       success: false,
       error: error instanceof Error ? error.message : 'Failed to process referral'
     };
+  }
+}
+
+// New function to handle referral offer completion
+export async function handleReferralOfferCompletion(userId: string): Promise<void> {
+  try {
+    // Get user's referrer
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('referred_by')
+      .eq('id', userId)
+      .single();
+
+    if (!profile?.referred_by) return; // User wasn't referred
+
+    // Update referrer's stats
+    await supabase
+      .from('profiles')
+      .update({
+        pending_referrals: supabase.sql`pending_referrals - 1`,
+        available_points: supabase.sql`available_points + 5000`,
+        total_earnings: supabase.sql`total_earnings + 5000`,
+        referral_earnings: supabase.sql`referral_earnings + 5000`
+      })
+      .eq('id', profile.referred_by);
+
+  } catch (error) {
+    console.error('Error processing referral offer completion:', error);
   }
 }
