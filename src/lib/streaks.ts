@@ -15,10 +15,10 @@ export async function updateStreak() {
     if (!profile) return;
 
     const now = new Date();
-    
-    // Initialize streak if this is the first completion
-    if (!profile.last_offer_completion) {
-      console.log('First completion - initializing streak');
+
+    // If streak is 0 or null, this is a fresh start
+    if (!profile.streak_count || profile.streak_count === 0) {
+      console.log('Starting fresh streak');
       const { error: initError } = await supabase
         .from('profiles')
         .update({
@@ -31,6 +31,27 @@ export async function updateStreak() {
       if (initError) {
         console.error('Error initializing streak:', initError);
         throw initError;
+      }
+
+      // Clear any existing multiplier from localStorage
+      localStorage.removeItem('activeMultiplier');
+      return;
+    }
+
+    // If no last completion date, but streak exists (shouldn't happen, but let's handle it)
+    if (!profile.last_offer_completion) {
+      console.log('No last completion date - resetting streak');
+      const { error: resetError } = await supabase
+        .from('profiles')
+        .update({
+          streak_count: 1,
+          last_offer_completion: now.toISOString()
+        })
+        .eq('id', user.id);
+
+      if (resetError) {
+        console.error('Error resetting streak:', resetError);
+        throw resetError;
       }
 
       // Clear any existing multiplier from localStorage
