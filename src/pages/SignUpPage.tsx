@@ -135,33 +135,16 @@ export function SignUpPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-green-800 dark:text-green-200">
-                  Welcome Bonus!
+                  {referralCode ? 'Double Welcome Bonus!' : 'Welcome Bonus!'}
                 </h3>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Get 5,000 points ($5) instantly when you join
+                  {referralCode 
+                    ? 'Get 5,000 points ($5) instantly + 5,000 bonus points from your referrer'
+                    : 'Get 5,000 points ($5) instantly when you join'}
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Referral Bonus (if applicable) */}
-          {referralCode && (
-            <div className="mb-8 bg-yellow-50 dark:bg-yellow-900/30 rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 dark:bg-yellow-800 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                    Extra Bonus Unlocked!
-                  </h3>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    You'll get an additional 1,000 points ($10)
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <SignUpForm />
 

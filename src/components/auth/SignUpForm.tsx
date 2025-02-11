@@ -72,13 +72,6 @@ export function SignUpForm() {
         </div>
       )}
 
-      {referralCode && (
-        <div className="bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg">
-          <p className="font-medium">Referral code applied!</p>
-          <p className="text-sm">You'll receive 5,000 bonus points upon signup.</p>
-        </div>
-      )}
-
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Email
