@@ -107,6 +107,7 @@ export function DashboardNav({
   return (
     <>
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        {/* Main Navigation */}
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
           <div className="w-full py-4 flex items-center justify-between">
             <div className="flex items-center gap-12">
@@ -141,7 +142,8 @@ export function DashboardNav({
             </div>
 
             <div className="flex items-center justify-end flex-1 gap-6">
-              <div className="flex items-center space-x-6">
+              {/* Desktop Stats */}
+              <div className="hidden lg:flex items-center space-x-6">
                 <MultiplierBadge />
 
                 {/* Points Display */}
@@ -149,7 +151,10 @@ export function DashboardNav({
                   <DollarSign className="w-4 h-4" />
                   <span className="font-medium">{points.toLocaleString()}p</span>
                 </div>
+              </div>
 
+              {/* Theme Toggle & Profile */}
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => setIsDark(!isDark)}
                   className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -169,7 +174,7 @@ export function DashboardNav({
                       alt="User avatar"
                       className="w-8 h-8 rounded-full bg-gray-100 ring-2 ring-white dark:ring-gray-800 group-hover:ring-green-200 dark:group-hover:ring-green-900 transition-all"
                     />
-                    <div className="flex flex-col items-start">
+                    <div className="hidden lg:flex flex-col items-start">
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {userEmail}
                       </span>
@@ -184,6 +189,15 @@ export function DashboardNav({
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Mobile Stats Bar */}
+          <div className="lg:hidden -mt-2 pb-4 flex items-center justify-between">
+            <MultiplierBadge />
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg whitespace-nowrap">
+              <DollarSign className="w-4 h-4" />
+              <span className="font-medium">{points.toLocaleString()}p</span>
             </div>
           </div>
         </nav>
