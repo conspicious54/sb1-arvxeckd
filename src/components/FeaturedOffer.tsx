@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign } from 'lucide-react';
+import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign, Loader2, X } from 'lucide-react';
 import type { Offer } from '../types';
 import { trackOfferStart } from '../lib/offers';
 import { OfferInstructionsPopup } from './OfferInstructionsPopup';
@@ -11,6 +11,8 @@ interface OfferCardProps {
 
 export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
   const [showInstructions, setShowInstructions] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   
   // Multiply points by 3 (1000 points = $1)
   const pointsAmount = Math.round(parseFloat(offer.payout) * 3000);
@@ -19,6 +21,9 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
 
   const handleStartOffer = async () => {
     try {
+      setIsStarted(true);
+      setIsChecking(true);
+      
       // Track that user started the offer
       await trackOfferStart(offer.offerid);
       
@@ -26,7 +31,14 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
       window.open(offer.link, '_blank');
     } catch (error) {
       console.error('Error starting offer:', error);
+      setIsStarted(false);
+      setIsChecking(false);
     }
+  };
+
+  const handleCancelOffer = () => {
+    setIsStarted(false);
+    setIsChecking(false);
   };
 
   return (
@@ -121,20 +133,36 @@ export function FeaturedOffer({ offer, onComplete }: OfferCardProps) {
                   <div className="text-xl md:text-2xl font-bold text-white mb-1">{pointsAmount.toLocaleString()}</div>
                   <div className="text-xs md:text-sm text-green-200">points</div>
                 </div>
-                <button
-                  onClick={() => {
-                    // On mobile, show instructions popup
-                    if (window.innerWidth < 768) {
-                      setShowInstructions(true);
-                    } else {
-                      handleStartOffer();
-                    }
-                  }}
-                  className="w-full bg-white hover:bg-green-50 text-green-700 px-4 md:px-6 py-2 md:py-3.5 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2 group shadow-lg z-10"
-                >
-                  Start Featured Offer
-                  <ExternalLink className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
+
+                {isStarted ? (
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="flex-1 text-white flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Checking completion...
+                    </div>
+                    <button
+                      onClick={handleCancelOffer}
+                      className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      // On mobile, show instructions popup
+                      if (window.innerWidth < 768) {
+                        setShowInstructions(true);
+                      } else {
+                        handleStartOffer();
+                      }
+                    }}
+                    className="w-full bg-white hover:bg-green-50 text-green-700 px-4 md:px-6 py-2 md:py-3.5 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2 group shadow-lg z-10"
+                  >
+                    Start Featured Offer
+                    <ExternalLink className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                )}
                 <p className="text-xs md:text-sm text-green-200 mt-2 md:mt-4">
                   Limited time offer - Complete now!
                 </p>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign, Shield, Target } from 'lucide-react';
+import { ExternalLink, Globe, Monitor, Clock, Star, ChevronRight, Sparkles, TrendingUp, DollarSign, Shield, Target, X, Loader2 } from 'lucide-react';
 import type { Offer } from '../types';
 import { trackOfferStart } from '../lib/offers';
 import { OfferInstructionsPopup } from './OfferInstructionsPopup';
@@ -11,6 +11,8 @@ interface OfferCardProps {
 
 export function OfferCard({ offer, onComplete }: OfferCardProps) {
   const [showInstructions, setShowInstructions] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   
   // Multiply points by 3 (1000 points = $1)
   const pointsAmount = Math.round(parseFloat(offer.payout) * 3000);
@@ -19,6 +21,9 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
 
   const handleStartOffer = async () => {
     try {
+      setIsStarted(true);
+      setIsChecking(true);
+      
       // Track that user started the offer
       await trackOfferStart(offer.offerid);
       
@@ -26,7 +31,14 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
       window.open(offer.link, '_blank');
     } catch (error) {
       console.error('Error starting offer:', error);
+      setIsStarted(false);
+      setIsChecking(false);
     }
+  };
+
+  const handleCancelOffer = () => {
+    setIsStarted(false);
+    setIsChecking(false);
   };
 
   return (
@@ -77,7 +89,7 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                   <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
                     {offer.name_short}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1 group-hover:line-clamp-2 transition-all duration-300">
                     {offer.adcopy}
                   </p>
                 </div>
@@ -128,24 +140,39 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
                   </div>
                 </div>
 
-                {/* Start Button */}
-                <button
-                  onClick={() => {
-                    // On mobile, show instructions popup
-                    if (window.innerWidth < 768) {
-                      setShowInstructions(true);
-                    } else {
-                      handleStartOffer();
-                    }
-                  }}
-                  className="relative overflow-hidden flex items-center gap-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all duration-300 text-sm font-medium group/btn z-10"
-                >
-                  <span className="relative z-10 flex items-center gap-1">
-                    Start Offer
-                    <ExternalLink className="w-4 h-4 transform group-hover/btn:translate-x-0.5 transition-transform" />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300" />
-                </button>
+                {/* Start/Loading Button */}
+                {isStarted ? (
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Checking completion...
+                    </div>
+                    <button
+                      onClick={handleCancelOffer}
+                      className="p-2 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      // On mobile, show instructions popup
+                      if (window.innerWidth < 768) {
+                        setShowInstructions(true);
+                      } else {
+                        handleStartOffer();
+                      }
+                    }}
+                    className="relative overflow-hidden flex items-center gap-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all duration-300 text-sm font-medium group/btn z-10"
+                  >
+                    <span className="relative z-10 flex items-center gap-1">
+                      Start Offer
+                      <ExternalLink className="w-4 h-4 transform group-hover/btn:translate-x-0.5 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
