@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { FeaturedOffer } from '../../components/FeaturedOffer';
 import { OfferCard } from '../../components/OfferCard';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Offer } from '../../types';
 
 interface OffersListProps {
@@ -12,8 +11,8 @@ interface OffersListProps {
 }
 
 export function OffersList({ offers, loading, error, onComplete }: OffersListProps) {
-  const OFFERS_PER_PAGE = 5;
-  const [currentPage, setCurrentPage] = useState(0);
+  const OFFERS_PER_TAB = 5;
+  const [activeTab, setActiveTab] = useState(0);
 
   if (loading) {
     return (
@@ -38,13 +37,13 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
     featuredOffer ? offer.offerid !== featuredOffer.offerid : true
   );
 
-  // Calculate total pages
-  const totalPages = Math.ceil(remainingOffers.length / OFFERS_PER_PAGE);
+  // Calculate total tabs needed
+  const totalTabs = Math.ceil(remainingOffers.length / OFFERS_PER_TAB);
 
-  // Get current page offers
+  // Get current tab's offers
   const currentOffers = remainingOffers.slice(
-    currentPage * OFFERS_PER_PAGE,
-    (currentPage + 1) * OFFERS_PER_PAGE
+    activeTab * OFFERS_PER_TAB,
+    (activeTab + 1) * OFFERS_PER_TAB
   );
 
   return (
@@ -70,75 +69,68 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
           </p>
         </div>
 
-        {/* Offers Grid */}
-        <div className="space-y-6">
-          {currentOffers.map((offer) => (
-            <OfferCard
-              key={offer.offerid}
-              offer={offer}
-              onComplete={onComplete}
-            />
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-gray-800">
-            {/* Page Numbers */}
-            <div className="hidden sm:flex items-center gap-2">
-              {[...Array(totalPages)].map((_, index) => (
+        {/* Tabs Navigation */}
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <div className="flex overflow-x-auto hide-scrollbar gap-2" style={{ scrollbarWidth: 'none' }}>
+            {[...Array(totalTabs)].map((_, index) => {
+              const startRange = index * OFFERS_PER_TAB + 1;
+              const endRange = Math.min((index + 1) * OFFERS_PER_TAB, remainingOffers.length);
+              
+              return (
                 <button
                   key={index}
-                  onClick={() => setCurrentPage(index)}
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-                    currentPage === index
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                  onClick={() => setActiveTab(index)}
+                  className={`
+                    flex-none px-6 py-3 text-sm font-medium rounded-t-lg transition-colors
+                    ${activeTab === index
+                      ? 'text-green-600 dark:text-green-400 bg-white dark:bg-gray-800 border-x border-t border-green-200 dark:border-green-800'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    }
+                  `}
                 >
-                  {index + 1}
+                  Offers {startRange}-{endRange}
                 </button>
-              ))}
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="flex items-center gap-4 sm:hidden">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Page {currentPage + 1} of {totalPages}
-              </span>
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                disabled={currentPage === 0}
-                className="p-2 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                disabled={currentPage === totalPages - 1}
-                className="p-2 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        {/* Empty State */}
-        {currentOffers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
-              No more offers available at this time.
-              <br />
-              Check back soon for new opportunities!
-            </p>
+        {/* Tab Content */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            {currentOffers.map((offer) => (
+              <div key={offer.offerid} className="p-4">
+                <OfferCard
+                  offer={offer}
+                  onComplete={onComplete}
+                />
+              </div>
+            ))}
           </div>
-        )}
+
+          {/* Empty State */}
+          {currentOffers.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">
+                No more offers available at this time.
+                <br />
+                Check back soon for new opportunities!
+              </p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Hide scrollbar styles */}
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
