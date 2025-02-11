@@ -14,12 +14,18 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
   // Calculate cash equivalent (points / 1000)
   const cashEquivalent = (pointsAmount / 1000).toFixed(2);
 
-  const handleStartOffer = async () => {
-    // Track that user started the offer
-    await trackOfferStart(offer.offerid);
+  const handleStartOffer = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent event bubbling
     
-    // Open offer in new tab
-    window.open(offer.link, '_blank');
+    try {
+      // Track that user started the offer
+      await trackOfferStart(offer.offerid);
+      
+      // Open offer in new tab
+      window.open(offer.link, '_blank');
+    } catch (error) {
+      console.error('Error starting offer:', error);
+    }
   };
 
   return (
@@ -123,7 +129,7 @@ export function OfferCard({ offer, onComplete }: OfferCardProps) {
               {/* Start Button */}
               <button
                 onClick={handleStartOffer}
-                className="relative overflow-hidden flex items-center gap-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all duration-300 text-sm font-medium group/btn"
+                className="relative overflow-hidden flex items-center gap-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all duration-300 text-sm font-medium group/btn z-10"
               >
                 <span className="relative z-10 flex items-center gap-1">
                   Start Offer
