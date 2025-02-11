@@ -1,4 +1,4 @@
-import { Home, Gift, Trophy, Users, Menu } from 'lucide-react';
+import { Home, Gift, Trophy, Users, Rocket } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function MobileBottomNav() {
@@ -9,7 +9,7 @@ export function MobileBottomNav() {
     { icon: Gift, label: 'Rewards', path: '/rewards' },
     { icon: Trophy, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Users, label: 'Share', path: '/share' },
-    { icon: Menu, label: 'More', path: '#' }
+    { icon: Rocket, label: 'Games', path: '/rocket-game' }
   ];
 
   return (
