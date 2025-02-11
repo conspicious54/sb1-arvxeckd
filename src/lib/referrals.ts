@@ -92,7 +92,8 @@ export function getSocialShareText(referralUrl: string | null): {
     email: {
       subject: "Get $5 Free - Join RapidRewards with my link!",
       body: `Hey!\n\nI've been using RapidRewards to earn extra money and thought you might be interested. They're giving out $5 FREE when you join using my referral link!\n\nIt's really easy to use - just complete simple tasks to earn points, then cash out for PayPal money or gift cards. I've already earned several rewards!\n\nJoin using my link to get your $5 bonus:\n${url}\n\nEnjoy!\n`
-    }
+    },
+    sms: `Hey! Join me on RapidRewards and get $5 for signing up! 🎁 Sign up here: ${referralUrl}` // New SMS-specific text
   };
 }
 

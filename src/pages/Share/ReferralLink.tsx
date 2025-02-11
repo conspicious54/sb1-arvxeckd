@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Share2, Copy, Facebook, Twitter, Linkedin, Mail } from 'lucide-react';
+import { Share2, Copy, Facebook, Twitter, Linkedin, Mail, MessageSquare } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getSocialShareText } from '../../lib/referrals';
 
@@ -60,6 +60,12 @@ export function ReferralLink({ referralUrl }: ReferralLinkProps) {
       icon: <Mail className="w-5 h-5" />,
       color: 'bg-gray-600 hover:bg-gray-700',
       shareUrl: `mailto:?subject=${encodeURIComponent(socialShareText.email.subject)}&body=${encodeURIComponent(socialShareText.email.body)}`
+    }
+    {
+      name: 'Text Message',
+      icon: <MessageSquare className="w-5 h-5" />,
+      color: 'bg-green-500 hover:bg-green-600',
+      shareUrl: `sms:?&body=${encodeURIComponent(socialShareText.twitter)}` // Using twitter text as it's usually shorter
     }
   ];
 
