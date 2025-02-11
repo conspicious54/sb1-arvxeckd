@@ -21,8 +21,8 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Multiply points by 3 (1000 points = $1)
-  const pointsEarned = Math.round(parseFloat(offer.payout) * 3000);
+  // Convert payout to points (1000 points = $1)
+  const pointsEarned = Math.round(parseFloat(offer.payout) * 1000);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -163,7 +163,7 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <TrendingUp className="w-8 h-8 text-white" />
                   <span className="text-4xl font-bold text-white animate-gradient-text">
-                    {offer.payout}
+                    ${offer.payout}
                   </span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
