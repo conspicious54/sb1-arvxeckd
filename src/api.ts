@@ -6,8 +6,8 @@ const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 function getDeviceInfo() {
   const ua = navigator.userAgent.toLowerCase();
   
-  // Check for iPhone
-  if (/iphone/i.test(ua)) {
+  // Check for iPhone/iPad
+  if (/iphone|ipad|ipod/i.test(ua)) {
     return { device: 'iPhone' };
   }
   
@@ -54,6 +54,48 @@ export async function trackOfferCompletion(offerId: number) {
   } catch (error) {
     console.error('Error tracking offer completion:', error);
     return false;
+  }
+}
+
+// Helper function to check if an offer is compatible with a device
+function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): boolean {
+  const deviceLower = offerDevice.toLowerCase();
+  
+  // Handle universal offers first
+  if (deviceLower === 'all' || deviceLower === 'any') {
+    return true;
+  }
+
+  // Split device string in case it contains multiple devices
+  const devices = deviceLower.split(/[,\s&|+]+/).map(d => d.trim());
+
+  switch (userDevice) {
+    case 'iPhone':
+      return devices.some(d => 
+        d === 'iphone' || 
+        d === 'ios' || 
+        d === 'mobile' ||
+        d === 'ipad' || 
+        d === 'apple'
+      );
+      
+    case 'Android':
+      return devices.some(d => 
+        d === 'android' || 
+        d === 'mobile' ||
+        d === 'phone'
+      );
+      
+    case 'desktop':
+      return devices.some(d => 
+        d === 'desktop' || 
+        d === 'pc' || 
+        d === 'computer' ||
+        d === 'web'
+      );
+      
+    default:
+      return false;
   }
 }
 
@@ -120,23 +162,21 @@ export async function fetchOffers(): Promise<Offer[]> {
       return [];
     }
 
-    // Filter offers based on device
+    // Filter offers based on device compatibility
     const filteredOffers = data.offers.filter(offer => {
-      const offerDevice = offer.device.toLowerCase();
-      
-      switch (device) {
-        case 'iPhone':
-          return offerDevice.includes('iphone') || offerDevice === 'ios';
-        case 'Android':
-          return offerDevice.includes('android');
-        case 'desktop':
-          return offerDevice.includes('desktop') || offerDevice === 'all';
-        default:
-          return true;
+      const isCompatible = isOfferCompatibleWithDevice(offer.device, device);
+      if (!isCompatible) {
+        console.log(`Offer ${offer.name_short} (${offer.device}) not compatible with ${device}`);
       }
+      return isCompatible;
     });
 
-    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${device} offers`);
+    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${device}-compatible offers`);
+    
+    // Log the device types of filtered offers
+    const deviceTypes = new Set(filteredOffers.map(o => o.device));
+    console.log('Compatible device types:', Array.from(deviceTypes));
+
     return filteredOffers;
 
   } catch (error) {
