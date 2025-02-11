@@ -6,14 +6,9 @@ const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 function getDeviceType(): string {
   const ua = navigator.userAgent.toLowerCase();
   
-  // Check for iPhone/iPad
+  // Check for iPhone
   if (/iphone|ipod/.test(ua)) {
     return 'iPhone';
-  }
-  
-  // Check for iPad specifically
-  if (/ipad/.test(ua)) {
-    return 'iPad';
   }
   
   // Check for Android
@@ -21,7 +16,7 @@ function getDeviceType(): string {
     return 'Android';
   }
   
-  // Default to desktop
+  // Default to Desktop
   return 'Desktop';
 }
 
@@ -64,24 +59,46 @@ export async function trackOfferCompletion(offerId: number) {
 
 // Helper function to check if an offer is compatible with user's device
 function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): boolean {
-  // Normalize both strings for comparison
-  const normalizedOfferDevice = offerDevice.trim();
-  const normalizedUserDevice = userDevice.trim();
+  if (!offerDevice) return false;
+  
+  // Normalize strings
+  const normalizedOfferDevice = offerDevice.toLowerCase().trim();
+  const normalizedUserDevice = userDevice.toLowerCase().trim();
+
+  // Split by common separators and normalize each device
+  const deviceList = normalizedOfferDevice
+    .split(/[,&\s]+/)
+    .map(d => d.trim())
+    .filter(Boolean);
+
+  // Log device compatibility check
+  console.log('Checking device compatibility:', {
+    offerDevice: normalizedOfferDevice,
+    userDevice: normalizedUserDevice,
+    deviceList
+  });
 
   // Direct match
-  if (normalizedOfferDevice === normalizedUserDevice) {
+  if (deviceList.includes(normalizedUserDevice)) {
     return true;
   }
 
   // Handle special cases
-  if (normalizedOfferDevice === 'All' || normalizedOfferDevice === 'all') {
+  if (deviceList.includes('all')) {
     return true;
   }
 
-  // Split offer device string in case it contains multiple devices
-  const devices = normalizedOfferDevice.split(/[,&]/);
-  
-  return devices.some(device => device.trim() === normalizedUserDevice);
+  // Handle iOS devices
+  if (normalizedUserDevice === 'iphone') {
+    return deviceList.includes('ios') || deviceList.includes('iphone');
+  }
+
+  // Handle Android devices
+  if (normalizedUserDevice === 'android') {
+    return deviceList.includes('android');
+  }
+
+  return false;
 }
 
 // Main function to fetch offers
@@ -105,7 +122,7 @@ export async function fetchOffers(): Promise<Offer[]> {
     const params = {
       ip: ipData.ip,
       user_agent: navigator.userAgent,
-      device, // Use exact device label (Desktop, iPhone, iPad, or Android)
+      device, // Use exact device label (Desktop, iPhone, or Android)
       ctype: '2',
       aff_sub4: 'myrapidrewards.com',
       aff_sub5: 'web_app'
@@ -131,7 +148,11 @@ export async function fetchOffers(): Promise<Offer[]> {
     }
 
     const data: ApiResponse = await response.json();
-    console.log('API response:', data);
+    console.log('API Response:', {
+      success: data.success,
+      offerCount: data.offers?.length || 0,
+      device
+    });
 
     if (!data.success) {
       const errorMessage = data.error 
@@ -146,6 +167,12 @@ export async function fetchOffers(): Promise<Offer[]> {
       console.warn('No offers available');
       return [];
     }
+
+    // Log raw offers before filtering
+    console.log('Raw offers before filtering:', data.offers.map(o => ({
+      name: o.name_short,
+      device: o.device
+    })));
 
     // Filter offers based on device compatibility
     const filteredOffers = data.offers.filter(offer => {
