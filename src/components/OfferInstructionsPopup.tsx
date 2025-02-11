@@ -114,17 +114,25 @@ export function OfferInstructionsPopup({ isOpen, onClose, offer, onStart }: Offe
             </div>
           </div>
 
-          {/* Action Button */}
-          <button
-            onClick={() => {
-              onStart();
-              onClose();
+          {/* Action Button - Now using an anchor tag */}
+          <a
+            href={offer.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent default to run our tracking first
+              onStart(); // Track the offer start
+              onClose(); // Close the popup
+              // Use a small timeout to ensure tracking completes
+              setTimeout(() => {
+                window.location.href = offer.link; // Redirect to the offer
+              }, 100);
             }}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-2 group shadow-lg shadow-green-200 dark:shadow-none"
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-2 group shadow-lg shadow-green-200 dark:shadow-none no-underline"
           >
             {getButtonText()}
             <ExternalLink className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </a>
         </div>
       </div>
 
