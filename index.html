@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
     <!-- Primary Meta Tags -->
     <title>RapidRewards - Earn Cash & Gift Cards | Get $5 Free</title>
@@ -16,10 +16,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="RapidRewards" />
     <meta name="application-name" content="RapidRewards" />
+    <meta name="mobile-web-app-capable" content="yes" />
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/png" href="https://i.imgur.com/RQ8dcVt.png" />
-    <link rel="apple-touch-icon" href="https://i.imgur.com/RQ8dcVt.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="https://i.imgur.com/RQ8dcVt.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="https://i.imgur.com/RQ8dcVt.png" />
+    <link rel="apple-touch-startup-image" href="https://i.imgur.com/RQ8dcVt.png" />
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -27,6 +29,33 @@
     <!-- Preconnect to Important Origins -->
     <link rel="preconnect" href="https://kuckthugrcohgiywvown.supabase.co" />
     <link rel="preconnect" href="https://images.unsplash.com" />
+
+    <!-- Prevent link highlighting and text selection -->
+    <style>
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+      html {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      input, textarea {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+      @media (display-mode: standalone) {
+        body {
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
@@ -42,6 +71,25 @@
             .catch(err => {
               console.log('ServiceWorker registration failed:', err);
             });
+        });
+      }
+
+      // Handle standalone mode
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', (e) => {
+          if (e.touches.length > 1) {
+            e.preventDefault();
+          }
+        }, { passive: false });
+
+        // Handle external links
+        document.addEventListener('click', (e) => {
+          const link = e.target.closest('a');
+          if (link && link.target === '_blank') {
+            e.preventDefault();
+            window.location.href = link.href;
+          }
         });
       }
     </script>
