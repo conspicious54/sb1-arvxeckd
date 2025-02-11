@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FeaturedOffer } from '../../components/FeaturedOffer';
 import { OfferCard } from '../../components/OfferCard';
 import type { Offer } from '../../types';
+import { ChevronDown } from 'lucide-react';
 
 interface OffersListProps {
   offers: Offer[];
@@ -11,13 +12,14 @@ interface OffersListProps {
 }
 
 export function OffersList({ offers, loading, error, onComplete }: OffersListProps) {
-  const [activeTab, setActiveTab] = useState(0);
-  const OFFERS_PER_TAB = 5;
+  const INITIAL_OFFERS = 7;
+  const OFFERS_INCREMENT = 7;
+  const [visibleOffers, setVisibleOffers] = useState(INITIAL_OFFERS);
 
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        {[...Array(5)].map((_, i) => (
+        {[...Array(INITIAL_OFFERS)].map((_, i) => (
           <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl" />
         ))}
       </div>
@@ -38,11 +40,13 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
     featuredOffer ? offer.offerid !== featuredOffer.offerid : true
   );
 
-  // Split offers into tabs
-  const totalTabs = Math.ceil(regularOffers.length / OFFERS_PER_TAB);
-  const tabOffers = Array.from({ length: totalTabs }, (_, i) => 
-    regularOffers.slice(i * OFFERS_PER_TAB, (i + 1) * OFFERS_PER_TAB)
-  );
+  // Get currently visible offers
+  const currentOffers = regularOffers.slice(0, visibleOffers);
+  const hasMoreOffers = visibleOffers < regularOffers.length;
+
+  const handleShowMore = () => {
+    setVisibleOffers(prev => Math.min(prev + OFFERS_INCREMENT, regularOffers.length));
+  };
 
   return (
     <div className="space-y-8">
@@ -64,13 +68,13 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
             Available Offers
           </h2>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {regularOffers.length} offers available
+            Showing {currentOffers.length} of {regularOffers.length} offers
           </div>
         </div>
 
-        {/* Offers in Current Tab */}
+        {/* Offers List */}
         <div className="space-y-6">
-          {tabOffers[activeTab]?.map((offer) => (
+          {currentOffers.map((offer) => (
             <OfferCard
               key={offer.offerid}
               offer={offer}
@@ -79,34 +83,16 @@ export function OffersList({ offers, loading, error, onComplete }: OffersListPro
           ))}
         </div>
 
-        {/* Tabs Navigation */}
-        {totalTabs > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-6">
-            <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
-              {tabOffers.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTab(index)}
-                  className={`
-                    relative px-6 py-2 rounded-lg font-medium text-sm transition-all duration-200
-                    ${activeTab === index
-                      ? 'text-white'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                    }
-                  `}
-                >
-                  {/* Active Tab Background */}
-                  {activeTab === index && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg transition-all duration-200" />
-                  )}
-                  
-                  {/* Tab Content */}
-                  <span className="relative z-10">
-                    Tab {index + 1}
-                  </span>
-                </button>
-              ))}
-            </div>
+        {/* Show More Button */}
+        {hasMoreOffers && (
+          <div className="flex justify-center pt-4">
+            <button
+              onClick={handleShowMore}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+            >
+              Show More Offers
+              <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:translate-y-0.5 transition-transform" />
+            </button>
           </div>
         )}
 
