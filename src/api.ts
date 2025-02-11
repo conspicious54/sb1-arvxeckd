@@ -6,7 +6,7 @@ const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 function getDeviceType(): string {
   const ua = navigator.userAgent.toLowerCase();
   
-  // Check for iPhone
+  // Check for iPhone/iPad
   if (/iphone|ipod/.test(ua)) {
     return 'iPhone';
   }
@@ -68,10 +68,7 @@ function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): b
   const normalizedOfferDevice = offerDevice.toLowerCase().trim();
   const normalizedUserDevice = userDevice.toLowerCase().trim();
 
-  console.log('Comparing devices:', {
-    normalizedOfferDevice,
-    normalizedUserDevice
-  });
+  console.log(`Checking compatibility for offer device "${normalizedOfferDevice}" with user device "${normalizedUserDevice}"`);
 
   // Split by common separators and normalize each device
   const deviceList = normalizedOfferDevice
@@ -81,34 +78,17 @@ function isOfferCompatibleWithDevice(offerDevice: string, userDevice: string): b
 
   console.log('Device list after splitting:', deviceList);
 
-  // Direct match
-  if (deviceList.includes(normalizedUserDevice)) {
-    console.log('Direct device match found');
-    return true;
+  // If the offer is for a single device, it must match exactly
+  if (deviceList.length === 1) {
+    const isMatch = deviceList[0] === normalizedUserDevice;
+    console.log(`Single device offer - Match: ${isMatch}`);
+    return isMatch;
   }
 
-  // Handle special cases
-  if (deviceList.includes('all')) {
-    console.log('Offer is compatible with all devices');
-    return true;
-  }
-
-  // Handle iOS devices
-  if (normalizedUserDevice === 'iphone') {
-    const isIosCompatible = deviceList.includes('ios') || deviceList.includes('iphone');
-    console.log('iOS device compatibility:', isIosCompatible);
-    return isIosCompatible;
-  }
-
-  // Handle Android devices
-  if (normalizedUserDevice === 'android') {
-    const isAndroidCompatible = deviceList.includes('android');
-    console.log('Android device compatibility:', isAndroidCompatible);
-    return isAndroidCompatible;
-  }
-
-  console.log('No device compatibility match found');
-  return false;
+  // For multi-device offers, check if user's device is included
+  const isCompatible = deviceList.includes(normalizedUserDevice);
+  console.log(`Multi-device offer - Compatible: ${isCompatible}`);
+  return isCompatible;
 }
 
 // Main function to fetch offers
@@ -135,7 +115,8 @@ export async function fetchOffers(): Promise<Offer[]> {
       device, // Use exact device label (Desktop, iPhone, or Android)
       ctype: '2',
       aff_sub4: 'myrapidrewards.com',
-      aff_sub5: 'web_app'
+      aff_sub5: 'web_app',
+      device_only: 'true' // Request device-specific offers
     };
 
     console.log('Fetching offers with params:', JSON.stringify(params, null, 2));
