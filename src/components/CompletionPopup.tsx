@@ -21,8 +21,11 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Convert payout to points (1000 points = $1)
-  const pointsEarned = Math.round(parseFloat(offer.payout) * 1000);
+  
+  // First triple the dollar amount, then convert to points (1000 points = $1)
+  const tripleAmount = parseFloat(offer.payout) * 3;
+  const pointsEarned = Math.round(tripleAmount * 1000);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -163,7 +166,7 @@ export function CompletionPopup({ isOpen, onClose, offer }: CompletionPopupProps
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <TrendingUp className="w-8 h-8 text-white" />
                   <span className="text-4xl font-bold text-white animate-gradient-text">
-                    ${offer.payout}
+                    ${tripleAmount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex items-center justify-center gap-2">

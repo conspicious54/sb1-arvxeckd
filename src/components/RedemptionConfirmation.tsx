@@ -1,5 +1,7 @@
 import { Gift, Clock, AlertTriangle, X, Check } from 'lucide-react';
 import type { RewardOption } from '../types';
+import confetti from 'canvas-confetti';
+import { useState } from 'react';
 
 interface RedemptionConfirmationProps {
   isOpen: boolean;
@@ -19,10 +21,57 @@ export function RedemptionConfirmation({
   reward,
   option
 }: RedemptionConfirmationProps) {
+  const [isRedeeming, setIsRedeeming] = useState(false);
+
   if (!isOpen) return null;
 
   // Calculate actual points needed after double points discount
   const displayPoints = option.double_points ? Math.round(option.points / 2) : option.points;
+
+  const handleConfirm = async () => {
+    setIsRedeeming(true);
+    
+    try {
+      await onConfirm();
+      
+      // Trigger confetti celebration
+      const duration = 2000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      function randomInRange(min: number, max: number) {
+        return Math.random() * (max - min) + min;
+      }
+
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors: ['#22c55e', '#10b981', '#fbbf24', '#f59e0b']
+        });
+      }, 250);
+
+    } catch (error) {
+      console.error('Error during redemption:', error);
+    } finally {
+      setIsRedeeming(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -112,15 +161,29 @@ export function RedemptionConfirmation({
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <button
-              onClick={onConfirm}
-              className="w-full bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              onClick={handleConfirm}
+              disabled={isRedeeming}
+              className="w-full bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden group"
             >
-              <Check className="w-5 h-5" />
-              Confirm Redemption
+              <span className="relative z-10 flex items-center gap-2">
+                {isRedeeming ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-5 h-5" />
+                    Confirm Redemption
+                  </>
+                )}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
             </button>
             <button
               onClick={onClose}
-              className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              disabled={isRedeeming}
+              className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
