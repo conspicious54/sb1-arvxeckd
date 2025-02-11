@@ -43,14 +43,34 @@
     <!-- Preconnect to Important Origins -->
     <link rel="preconnect" href="https://kuckthugrcohgiywvown.supabase.co" />
     <link rel="preconnect" href="https://images.unsplash.com" />
-    
-    <!-- Preload Critical Assets -->
-    <link rel="preload" href="/spinning.mp3" as="audio" type="audio/mpeg" />
-    <link rel="preload" href="/success.mp3" as="audio" type="audio/mpeg" />
-    <link rel="preload" href="/win.mp3" as="audio" type="audio/mpeg" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Structured Data for Rich Results -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "RapidRewards",
+        "description": "Complete simple tasks to earn PayPal cash and gift cards. Join over 50,000 users earning rewards daily.",
+        "applicationCategory": "Rewards Platform",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Free to join with $5 welcome bonus"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "ratingCount": "15000",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      }
+    </script>
   </body>
 </html>

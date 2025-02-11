@@ -82,9 +82,9 @@ export function SignUpForm() {
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Email
         </label>
-        <div className="relative group">
+        <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+            <Mail className="h-5 w-5 text-gray-400" />
           </div>
           <input
             id="email"
@@ -92,12 +92,9 @@ export function SignUpForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="you@example.com"
           />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center opacity-0 group-focus-within:opacity-100 transition-opacity">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          </div>
         </div>
       </div>
 
@@ -105,9 +102,9 @@ export function SignUpForm() {
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Password
         </label>
-        <div className="relative group">
+        <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-green-500 transition-colors" />
+            <Lock className="h-5 w-5 text-gray-400" />
           </div>
           <input
             id="password"
@@ -116,14 +113,11 @@ export function SignUpForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="••••••••"
           />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center opacity-0 group-focus-within:opacity-100 transition-opacity">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          </div>
         </div>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Must be at least 6 characters
         </p>
       </div>
@@ -131,20 +125,14 @@ export function SignUpForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors relative overflow-hidden group"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <span className="relative z-10 flex items-center gap-2">
-          {loading ? 'Creating account...' : 'Create account'}
-        </span>
-        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+        {loading ? 'Creating account...' : 'Create account'}
       </button>
 
       <p className="text-center text-sm text-gray-600 dark:text-gray-400">
         Already have an account?{' '}
-        <Link
-          to="/login"
-          className="font-medium text-green-600 hover:text-green-500 transition-colors"
-        >
+        <Link to="/login" className="text-green-600 hover:text-green-500">
           Sign in
         </Link>
       </p>
