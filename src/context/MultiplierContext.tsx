@@ -26,27 +26,22 @@ export function MultiplierProvider({ children }: { children: React.ReactNode }) 
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('streak_count')
+          .select('streak_count, last_offer_completion')
           .eq('id', user.id)
           .single();
 
-        if (profile) {
-          // Calculate multiplier based on streak (0.1 per day up to 2x)
+        if (profile?.streak_count && profile.last_offer_completion) {
+          // Only set multiplier if user has an active streak
           const streakMultiplier = Math.min(1 + (profile.streak_count * 0.1), 2);
-          
-          // Only set if streak multiplier is greater than 1
           if (streakMultiplier > 1) {
             setMultiplierValue(streakMultiplier);
             setSource('streak');
-            localStorage.setItem('activeMultiplier', JSON.stringify({ 
-              value: streakMultiplier, 
-              source: 'streak',
-              lastUpdated: new Date().toISOString()
-            }));
-          } else {
-            // Clear any stored multiplier for new users
-            localStorage.removeItem('activeMultiplier');
           }
+        } else {
+          // Clear any stored multiplier if no active streak
+          setMultiplierValue(1);
+          setSource(null);
+          localStorage.removeItem('activeMultiplier');
         }
       } catch (error) {
         console.error('Error loading user streak:', error);
@@ -61,13 +56,6 @@ export function MultiplierProvider({ children }: { children: React.ReactNode }) 
     if (value > multiplier) {
       setMultiplierValue(value);
       setSource(newSource);
-      
-      // Store in localStorage with timestamp
-      localStorage.setItem('activeMultiplier', JSON.stringify({ 
-        value, 
-        source: newSource,
-        lastUpdated: new Date().toISOString()
-      }));
     }
   };
 

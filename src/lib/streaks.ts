@@ -20,7 +20,7 @@ export async function updateStreak() {
     // Initialize streak if this is the first completion
     if (!lastCompletion) {
       console.log('First completion - initializing streak');
-      await supabase
+      const { error: initError } = await supabase
         .from('profiles')
         .update({
           streak_count: 1,
@@ -28,6 +28,14 @@ export async function updateStreak() {
           last_offer_completion: now.toISOString()
         })
         .eq('id', user.id);
+
+      if (initError) {
+        console.error('Error initializing streak:', initError);
+        throw initError;
+      }
+
+      // Clear any existing multiplier from localStorage
+      localStorage.removeItem('activeMultiplier');
       return;
     }
 
@@ -83,8 +91,8 @@ export async function updateStreak() {
 
       console.log('Streak updated:', { newStreak, newBestStreak });
     } else {
-      console.log('Streak broken - resetting to 1');
-      // More than one day has passed, reset streak to 1
+      console.log('Starting new streak');
+      // More than one day has passed, start new streak at 1
       const { error: resetError } = await supabase
         .from('profiles')
         .update({
@@ -94,9 +102,12 @@ export async function updateStreak() {
         .eq('id', user.id);
 
       if (resetError) {
-        console.error('Error resetting streak:', resetError);
+        console.error('Error starting new streak:', resetError);
         throw resetError;
       }
+
+      // Clear any existing multiplier from localStorage
+      localStorage.removeItem('activeMultiplier');
     }
   } catch (error) {
     console.error('Error in updateStreak:', error);
