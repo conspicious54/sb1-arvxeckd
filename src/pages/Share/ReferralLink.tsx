@@ -73,7 +73,7 @@ export function ReferralLink({ referralUrl }: ReferralLinkProps) {
               type="text"
               value={referralUrl || ''}
               readOnly
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono text-sm"
             />
             {showCopiedEffect && (
               <div 
