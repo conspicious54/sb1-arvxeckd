@@ -112,7 +112,6 @@ export async function fetchOffers(): Promise<Offer[]> {
       ip: ipData.ip,
       user_agent: navigator.userAgent,
       device, // iPhone, iPad, Android, or Desktop
-      ctype: '2',
       aff_sub4: 'myrapidrewards.com',
       aff_sub5: 'web_app',
       device_specific: '1', // Request device-specific offers
