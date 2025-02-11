@@ -2,6 +2,27 @@ import type { ApiResponse, Offer } from './types';
 
 const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 
+// Helper function to detect device type and OS
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+  let deviceType = 'desktop';
+  let os = 'unknown';
+
+  // Check if mobile
+  if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
+    deviceType = 'mobile';
+    
+    // Detect specific mobile OS
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+      os = 'ios';
+    } else if (/Android/i.test(ua)) {
+      os = 'android';
+    }
+  }
+
+  return { deviceType, os };
+}
+
 // Helper function to track offer completions
 export async function trackOfferCompletion(offerId: number) {
   try {
@@ -11,11 +32,16 @@ export async function trackOfferCompletion(offerId: number) {
     const ipResponse = await fetch('https://api.ipify.org?format=json');
     const ipData = await ipResponse.json();
 
+    // Get device info
+    const { deviceType, os } = getDeviceInfo();
+
     // Create tracking data
     const trackingData = {
       offer_id: offerId,
       ip: ipData.ip,
       user_agent: navigator.userAgent,
+      device_type: deviceType,
+      os: os,
       aff_sub4: localStorage.getItem('userEmail') || '',
       aff_sub5: 'web_app',
       timestamp: new Date().toISOString()
@@ -48,6 +74,10 @@ export async function fetchOffers(): Promise<Offer[]> {
     const ipData = await ipResponse.json();
     console.log('IP address fetched:', ipData.ip);
 
+    // Get device information
+    const { deviceType, os } = getDeviceInfo();
+    console.log('Device info:', { deviceType, os });
+
     // Ensure aff_sub4 is a valid string
     const aff_sub4 = 'myrapidrewards.com'; // Use a fixed domain as default
 
@@ -55,6 +85,8 @@ export async function fetchOffers(): Promise<Offer[]> {
     const params = {
       ip: ipData.ip,
       user_agent: navigator.userAgent,
+      device_type: deviceType,
+      os: os,
       ctype: '2',
       aff_sub4,
       aff_sub5: 'web_app'
@@ -96,7 +128,31 @@ export async function fetchOffers(): Promise<Offer[]> {
       return [];
     }
 
-    return data.offers;
+    // Filter offers based on device type and OS
+    const filteredOffers = data.offers.filter(offer => {
+      // If we're on mobile, only show mobile offers
+      if (deviceType === 'mobile') {
+        if (offer.device.toLowerCase().includes('desktop')) {
+          return false;
+        }
+        // If we're on iOS, only show iOS offers
+        if (os === 'ios' && !offer.device.toLowerCase().includes('ios')) {
+          return false;
+        }
+        // If we're on Android, only show Android offers
+        if (os === 'android' && !offer.device.toLowerCase().includes('android')) {
+          return false;
+        }
+      }
+      // If we're on desktop, only show desktop offers
+      else if (deviceType === 'desktop') {
+        return offer.device.toLowerCase().includes('desktop');
+      }
+      return true;
+    });
+
+    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${deviceType} offers`);
+    return filteredOffers;
 
   } catch (error) {
     console.error('Error fetching offers:', error);

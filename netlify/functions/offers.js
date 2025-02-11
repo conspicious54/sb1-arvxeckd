@@ -8,6 +8,10 @@ exports.handler = async (event) => {
     const targetUrl = `https://unlockcontent.net/api/v2?${new URLSearchParams(params).toString()}`;
     
     console.log('Making request to:', targetUrl);
+    console.log('With device params:', {
+      device_type: params.device_type,
+      os: params.os
+    });
 
     // Make the request to the API
     const response = await fetch(targetUrl, {
