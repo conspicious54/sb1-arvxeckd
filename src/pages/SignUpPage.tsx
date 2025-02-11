@@ -114,7 +114,7 @@ export function SignUpPage() {
   <img 
     src="https://i.imgur.com/XhVzGft.png"
     alt="RapidRewards"
-    className="h-11 w-auto dark:invert-0 dark:brightness-100 invert brightness-0"
+    className="h-11 w-auto invert dark:invert-0"
   />
 </a>
 

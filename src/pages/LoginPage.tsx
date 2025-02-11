@@ -9,13 +9,13 @@ export function LoginPage() {
       {/* Left side - Form */}
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white dark:bg-gray-900">
         <div className="mx-auto w-full max-w-sm">
-          <div className="flex items-center gap-2 mb-8">
-            <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-              <DollarSign className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              RapidRewards
-            </span>
+        <a href="/" className="flex items-center gap-2 mb-8">
+  <img 
+    src="https://i.imgur.com/XhVzGft.png"
+    alt="RapidRewards"
+    className="h-11 w-auto invert dark:invert-0"
+  />
+</a>
           </div>
 
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
