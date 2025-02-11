@@ -1,6 +1,8 @@
 import { DollarSign, Gift, Star, Shield, Sparkles, Trophy, Users, Clock, ChevronRight, Smartphone, Check } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SignUpForm } from '../components/auth/SignUpForm';
+import { default as NextLink } from 'next/link';
+
 
 export function SignUpPage() {
   const [searchParams] = useSearchParams();
@@ -109,13 +111,13 @@ export function SignUpPage() {
       {/* Right side - Form */}
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white dark:bg-gray-900">
         <div className="mx-auto w-full max-w-sm">
-        <Link href="/" className="flex items-center gap-2 mb-8">
+        <NextLink href="/" className="flex items-center gap-2 mb-8">
   <img 
     src="https://i.imgur.com/XhVzGft.png"
     alt="RapidRewards"
-    className="h-8 w-auto dark:invert-0 invert"
+    className="h-11 w-auto dark:invert-0 dark:brightness-100 invert brightness-0"
   />
-</Link>
+</NextLink>
 
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
