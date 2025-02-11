@@ -15,10 +15,9 @@ export async function updateStreak() {
     if (!profile) return;
 
     const now = new Date();
-    const lastCompletion = profile.last_offer_completion ? new Date(profile.last_offer_completion) : null;
     
     // Initialize streak if this is the first completion
-    if (!lastCompletion) {
+    if (!profile.last_offer_completion) {
       console.log('First completion - initializing streak');
       const { error: initError } = await supabase
         .from('profiles')
@@ -38,6 +37,8 @@ export async function updateStreak() {
       localStorage.removeItem('activeMultiplier');
       return;
     }
+
+    const lastCompletion = new Date(profile.last_offer_completion);
 
     // Helper function to check if two dates are the same calendar day
     const isSameDay = (date1: Date, date2: Date) => {
