@@ -88,7 +88,7 @@ export function DashboardPage() {
             onFilterChange={setFilters}
           />
 
-          {/* Offers List with Tabs */}
+          {/* Offers List */}
           <OffersList 
             offers={sortedOffers}
             loading={loading}
