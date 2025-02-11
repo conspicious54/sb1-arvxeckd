@@ -30,26 +30,28 @@ export async function updateStreak() {
       return;
     }
 
-    // Check if the last completion was yesterday
-    const isYesterday = (
-      lastCompletion.getDate() === now.getDate() - 1 &&
-      lastCompletion.getMonth() === now.getMonth() &&
-      lastCompletion.getFullYear() === now.getFullYear()
-    );
+    // Helper function to check if two dates are the same day
+    const isSameDay = (date1: Date, date2: Date) => {
+      return date1.getFullYear() === date2.getFullYear() &&
+             date1.getMonth() === date2.getMonth() &&
+             date1.getDate() === date2.getDate();
+    };
+
+    // Helper function to check if date1 is exactly one day before date2
+    const isConsecutiveDay = (date1: Date, date2: Date) => {
+      const oneDayInMs = 24 * 60 * 60 * 1000;
+      const diffInDays = Math.round((date2.getTime() - date1.getTime()) / oneDayInMs);
+      return diffInDays === 1;
+    };
 
     // Check if the last completion was today
-    const isToday = (
-      lastCompletion.getDate() === now.getDate() &&
-      lastCompletion.getMonth() === now.getMonth() &&
-      lastCompletion.getFullYear() === now.getFullYear()
-    );
-
-    if (isToday) {
+    if (isSameDay(lastCompletion, now)) {
       // Already completed an offer today, streak stays the same
       return;
     }
 
-    if (isYesterday) {
+    // Check if the last completion was yesterday
+    if (isConsecutiveDay(lastCompletion, now)) {
       // Increment streak
       const newStreak = profile.streak_count + 1;
       const newBestStreak = Math.max(newStreak, profile.best_streak || 0);
@@ -63,7 +65,7 @@ export async function updateStreak() {
         })
         .eq('id', user.id);
     } else {
-      // Streak broken, reset to 1
+      // More than one day has passed, reset streak to 1
       await supabase
         .from('profiles')
         .update({
