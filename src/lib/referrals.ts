@@ -62,6 +62,7 @@ export async function getReferralUrl(): Promise<string | null> {
   const code = await getReferralCode();
   if (!code) return null;
   
+  // Create a URL with proper UTM parameters
   const baseUrl = 'https://myrapidrewards.com/signup';
   const params = new URLSearchParams({
     ref: code,
@@ -136,19 +137,19 @@ export async function processReferral(referralCode: string): Promise<{
     }
 
     // Start a transaction-like sequence
-    // 1. Update referred user's profile
+    // 1. Update referred user's profile with referrer and welcome bonus
     const { error: userError } = await client
       .from('profiles')
       .update({
         referred_by: referrer.id,
-        available_points: 5000,
+        available_points: 5000, // Welcome bonus
         total_earnings: 5000
       })
       .eq('id', user.id);
 
     if (userError) throw userError;
 
-    // 2. Update referrer's profile
+    // 2. Update referrer's stats
     const { error: referrerError } = await client
       .from('profiles')
       .update({
@@ -183,7 +184,7 @@ export async function handleReferralOfferCompletion(userId: string): Promise<voi
     if (!profile?.referred_by) return; // User wasn't referred
 
     // Start a transaction-like sequence
-    // 1. Update referrer's stats
+    // 1. Update referrer's stats - they get 5000 points when their referral completes an offer
     const { error: referrerError } = await client
       .from('profiles')
       .update({
