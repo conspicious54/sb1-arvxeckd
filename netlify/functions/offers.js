@@ -4,36 +4,33 @@ exports.handler = async (event) => {
   try {
     const { apiKey, params } = JSON.parse(event.body);
 
-    // Use the device parameter directly from the client
-    const queryParams = new URLSearchParams(params);
+    // Create the target URL exactly as shown in documentation
+    const targetUrl = `https://unlockcontent.net/api/v2?${new URLSearchParams(params)}`;
     
-    console.log('Making request to API with params:', {
-      device: params.device,
-      device_specific: params.device_specific,
-      mobile_only: params.mobile_only
-    });
+    console.log('Making API request to:', targetUrl);
+    console.log('Request params:', params);
 
-    // Build the target URL with required parameters
-    const targetUrl = `https://unlockcontent.net/api/v2?${queryParams.toString()}`;
-    
-    console.log('Making request to:', targetUrl);
-
-    // Make the request to the API
+    // Make request exactly as shown in documentation
     const response = await fetch(targetUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'User-Agent': params.user_agent
+        'Accept': 'application/json'
       }
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
-    console.log('API Response:', {
+    
+    // Log the raw response to see what devices are coming back
+    console.log('Raw API response:', {
       success: data.success,
       offerCount: data.offers?.length || 0,
-      device: params.device
+      deviceTypes: data.offers?.map(offer => offer.device)
     });
 
     return {
