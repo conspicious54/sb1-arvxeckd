@@ -53,7 +53,7 @@ export function LoginPage() {
         </div>
       </div>
 
-      {/* Right side - Image and Features */}
+      {/** Right side - Image and Features */}
       <div className="hidden lg:block relative flex-1">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/90 to-emerald-600/90"></div>
