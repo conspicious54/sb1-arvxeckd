@@ -78,12 +78,11 @@ export function Footer() {
             {/* Brand Column */}
             <div className="lg:col-span-2">
               <Link to="/" className="flex items-center gap-2 mb-6">
-                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
-                  RapidRewards
-                </span>
+                <img 
+                  src="https://i.imgur.com/XhVzGft.png"
+                  alt="RapidRewards"
+                  className="h-8 w-auto"
+                />
               </Link>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-sm">
                 Join millions of users earning rewards daily through surveys, offers, and referrals. Your time is valuable - get paid for it.

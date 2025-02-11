@@ -33,12 +33,11 @@ export function LandingNav({
         <div className="w-full py-4 flex items-center justify-between">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <div className={`p-2 rounded-lg ${isHomePage ? 'bg-white/20 backdrop-blur-sm' : 'bg-gradient-to-r from-green-500 to-emerald-600'}`}>
-                <DollarSign className="h-6 w-6 text-white" />
-              </div>
-              <span className={`ml-3 text-xl font-bold ${isHomePage ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-                RapidRewards
-              </span>
+              <img 
+                src="https://i.imgur.com/XhVzGft.png"
+                alt="RapidRewards"
+                className="h-8 w-auto"
+              />
             </Link>
             
             <div className="hidden ml-10 space-x-8 lg:block">
