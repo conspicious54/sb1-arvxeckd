@@ -2,25 +2,22 @@ import type { ApiResponse, Offer } from './types';
 
 const API_KEY = '30066|ZLRMafmKrAeqte2ploWq0Hyn7Rq8IY6GNQmGwBEye3525b9b';
 
-// Helper function to detect device type and OS
+// Helper function to detect device type
 function getDeviceInfo() {
   const ua = navigator.userAgent.toLowerCase();
-  let deviceType = 'desktop';
-  let os = 'unknown';
-
-  // Check if mobile
-  if (/mobile|android|iphone|ipad|ipod/i.test(ua)) {
-    deviceType = 'mobile';
-    
-    // Detect specific mobile OS
-    if (/iphone|ipad|ipod/i.test(ua)) {
-      os = 'ios';
-    } else if (/android/i.test(ua)) {
-      os = 'android';
-    }
+  
+  // Check for iPhone
+  if (/iphone/i.test(ua)) {
+    return { device: 'iPhone' };
   }
-
-  return { deviceType, os };
+  
+  // Check for Android
+  if (/android/i.test(ua)) {
+    return { device: 'Android' };
+  }
+  
+  // Default to desktop
+  return { device: 'desktop' };
 }
 
 // Helper function to track offer completions
@@ -33,15 +30,14 @@ export async function trackOfferCompletion(offerId: number) {
     const ipData = await ipResponse.json();
 
     // Get device info
-    const { deviceType, os } = getDeviceInfo();
+    const { device } = getDeviceInfo();
 
     // Create tracking data
     const trackingData = {
       offer_id: offerId,
       ip: ipData.ip,
       user_agent: navigator.userAgent,
-      device_type: deviceType,
-      os: os,
+      device: device,
       aff_sub4: localStorage.getItem('userEmail') || '',
       aff_sub5: 'web_app',
       timestamp: new Date().toISOString()
@@ -75,20 +71,16 @@ export async function fetchOffers(): Promise<Offer[]> {
     console.log('IP address fetched:', ipData.ip);
 
     // Get device information
-    const { deviceType, os } = getDeviceInfo();
-    console.log('Device info:', { deviceType, os });
-
-    // Ensure aff_sub4 is a valid string
-    const aff_sub4 = 'myrapidrewards.com'; // Use a fixed domain as default
+    const { device } = getDeviceInfo();
+    console.log('Device detected:', device);
 
     // Build the request parameters
     const params = {
       ip: ipData.ip,
       user_agent: navigator.userAgent,
-      device_type: deviceType,
-      os: os,
+      device: device, // Use exact device label required by API
       ctype: '2',
-      aff_sub4,
+      aff_sub4: 'myrapidrewards.com',
       aff_sub5: 'web_app'
     };
 
@@ -128,40 +120,23 @@ export async function fetchOffers(): Promise<Offer[]> {
       return [];
     }
 
-    // Filter offers based on device type and OS
+    // Filter offers based on device
     const filteredOffers = data.offers.filter(offer => {
       const offerDevice = offer.device.toLowerCase();
       
-      // If we're on mobile
-      if (deviceType === 'mobile') {
-        // Reject desktop-only offers
-        if (offerDevice.includes('desktop')) {
-          return false;
-        }
-        
-        // For iOS devices
-        if (os === 'ios') {
-          return offerDevice.includes('ios') || offerDevice.includes('iphone') || offerDevice.includes('ipad') || offerDevice === 'mobile';
-        }
-        
-        // For Android devices
-        if (os === 'android') {
-          return offerDevice.includes('android') || offerDevice === 'mobile';
-        }
-        
-        // For other mobile devices
-        return offerDevice.includes('mobile');
+      switch (device) {
+        case 'iPhone':
+          return offerDevice.includes('iphone') || offerDevice === 'ios';
+        case 'Android':
+          return offerDevice.includes('android');
+        case 'desktop':
+          return offerDevice.includes('desktop') || offerDevice === 'all';
+        default:
+          return true;
       }
-      
-      // If we're on desktop
-      if (deviceType === 'desktop') {
-        return offerDevice.includes('desktop') || offerDevice === 'all';
-      }
-      
-      return true; // Include if no specific device targeting
     });
 
-    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${deviceType} (${os}) offers`);
+    console.log(`Filtered ${data.offers.length} offers down to ${filteredOffers.length} ${device} offers`);
     return filteredOffers;
 
   } catch (error) {
