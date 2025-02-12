@@ -22,7 +22,7 @@ export function SignUpForm() {
       // Create new account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
-        password,
+        password
       });
 
       if (signUpError) {
@@ -38,26 +38,13 @@ export function SignUpForm() {
         throw new Error('Failed to create user account');
       }
 
-      // Wait for the user profile to be created
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       // Process referral if code exists
-      if (referralCode && authData.user) {
-        console.log('Processing referral for new user:', {
-          userId: authData.user.id,
-          referralCode
-        });
-        
+      if (referralCode) {
+        console.log('Processing referral with code:', referralCode);
         const { success, error: referralError } = await processReferral(referralCode);
         
         if (!success) {
-          console.error('Referral processing failed:', {
-            error: referralError,
-            userId: authData.user.id,
-            referralCode
-          });
-        } else {
-          console.log('Referral processed successfully');
+          console.error('Referral processing error:', referralError);
         }
       }
 
@@ -74,6 +61,7 @@ export function SignUpForm() {
       setLoading(false);
     }
   };
+
 
 
   return (
