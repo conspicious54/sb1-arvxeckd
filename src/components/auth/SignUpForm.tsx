@@ -22,7 +22,12 @@ export function SignUpForm() {
       // Create new account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            referred_by: referralCode || null // Store referral code in user metadata
+          }
+        }
       });
 
       if (signUpError) {
@@ -38,14 +43,41 @@ export function SignUpForm() {
         throw new Error('Failed to create user account');
       }
 
+      // Wait a moment for the user profile to be created
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Process referral if code exists
       if (referralCode) {
-        console.log('Processing referral with code:', referralCode);
+        console.log('Processing referral for new user:', {
+          userId: authData.user.id,
+          referralCode
+        });
+        
         const { success, error: referralError } = await processReferral(referralCode);
         
         if (!success) {
-          console.error('Referral processing error:', referralError);
-          // Don't throw error here - we still want to complete signup
+          console.error('Referral processing failed:', {
+            error: referralError,
+            userId: authData.user.id,
+            referralCode
+          });
+          
+          // Create a support ticket or notification for failed referral
+          try {
+            await supabase.from('failed_referrals').insert({
+              user_id: authData.user.id,
+              referral_code: referralCode,
+              error_message: referralError,
+              created_at: new Date().toISOString()
+            });
+          } catch (supportError) {
+            console.error('Failed to log referral error:', supportError);
+          }
+        } else {
+          console.log('Referral processed successfully:', {
+            userId: authData.user.id,
+            referralCode
+          });
         }
       }
 
