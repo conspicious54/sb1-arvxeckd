@@ -103,105 +103,78 @@ export async function processReferral(referralCode: string): Promise<{
   const client = supabase;
   
   try {
-    // Add validation for empty or invalid referral code
-    if (!referralCode || typeof referralCode !== 'string') {
-      console.warn('Invalid referral code format:', referralCode);
+    if (!referralCode) {
       return { success: false, error: 'Invalid referral code' };
     }
 
     // Get current user
     const { data: { user } } = await client.auth.getUser();
     if (!user) {
-      console.warn('No authenticated user found');
       return { success: false, error: 'Not authenticated' };
     }
 
-    // Get the referrer's profile with additional logging
+    // Get the referrer's profile
     const { data: referrer, error: referrerError } = await client
       .from('profiles')
-      .select('id, referral_code')
+      .select('id')
       .eq('referral_code', referralCode)
       .single();
 
     if (referrerError || !referrer) {
-      console.warn('Referrer lookup failed:', referrerError || 'No referrer found');
+      console.warn('Referrer not found for code:', referralCode);
       return { success: false, error: 'Invalid referral code' };
     }
 
-    // Prevent self-referral
-    if (user.id === referrer.id) {
-      return { success: false, error: 'Cannot refer yourself' };
-    }
-
-    // Add logging for debugging
-    console.log('Processing referral:', {
-      referralCode,
-      userId: user.id,
-      referrerId: referrer.id
-    });
-
     // Check if user is already referred
-    const { data: existingReferral, error: checkError } = await client
+    const { data: existingReferral } = await client
       .from('profiles')
       .select('referred_by')
       .eq('id', user.id)
       .single();
 
-    if (checkError) {
-      console.error('Error checking existing referral:', checkError);
-      throw checkError;
-    }
-
     if (existingReferral?.referred_by) {
-      console.warn('User already referred:', user.id);
       return { success: false, error: 'User already has a referrer' };
     }
 
-    // Start transaction-like sequence with better error handling
-    const { error: userError } = await client
-      .from('profiles')
-      .update({
-        referred_by: referrer.id,
-        available_points: 5000, // Welcome bonus
-        total_earnings: 5000
-      })
-      .eq('id', user.id);
+    // Execute all database operations in sequence
+    const updates = await Promise.all([
+      // 1. Update the referred user's profile
+      client
+        .from('profiles')
+        .update({
+          referred_by: referrer.id,
+          available_points: 5000,
+          total_earnings: 5000
+        })
+        .eq('id', user.id),
 
-    if (userError) {
-      console.error('Failed to update referred user:', userError);
-      throw userError;
+      // 2. Update referrer's stats
+      client
+        .from('profiles')
+        .update({
+          pending_referrals: client.sql`pending_referrals + 1`,
+          total_referrals: client.sql`total_referrals + 1`
+        })
+        .eq('id', referrer.id),
+
+      // 3. Create referral earnings record
+      client
+        .from('referral_earnings')
+        .insert({
+          referrer_id: referrer.id,
+          referred_id: user.id,
+          points_earned: 0,
+          earned_at: new Date().toISOString()
+        })
+    ]);
+
+    // Check for any errors
+    const errors = updates.filter(update => update.error);
+    if (errors.length > 0) {
+      console.error('Errors during referral processing:', errors);
+      throw new Error('Failed to process referral');
     }
 
-    // Update referrer's stats
-    const { error: referrerError2 } = await client
-      .from('profiles')
-      .update({
-        pending_referrals: client.sql`pending_referrals + 1`,
-        total_referrals: client.sql`total_referrals + 1`
-      })
-      .eq('id', referrer.id);
-
-    if (referrerError2) {
-      console.error('Failed to update referrer:', referrerError2);
-      throw referrerError2;
-    }
-
-    // Create initial referral_earnings record
-    const { error: earningError } = await client
-      .from('referral_earnings')
-      .insert({
-        referrer_id: referrer.id,
-        referred_id: user.id,
-        points_earned: 0, // Will be updated when they complete an offer
-        earned_at: new Date().toISOString()
-      });
-
-    if (earningError) {
-      console.error('Failed to create earnings record:', earningError);
-      throw earningError;
-    }
-
-    console.log('Referral processed successfully');
     return { success: true };
 
   } catch (error) {
